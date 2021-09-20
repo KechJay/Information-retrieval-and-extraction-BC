@@ -1,0 +1,362 @@
+#============================================================Validation data set===============================================
+#===================================resampling
+set.seed(3456)
+Valid_data <- BC2H[sample(nrow(BC2H), 300), ]#Note that this was sample from the first completed data which was 7645, now we have 9882
+
+write.csv(dup2,  file=
+            "dup2.csv")
+#write.csv(Valid_data,  file=
+#            "Valid_dataB.csv")
+
+Not_stand <- read.csv("BC_merged_NCR_imp_V2_not_standardised.csv")
+
+#common <- intersect(Valid_data$EPISODE_NO, Not_stand$EPISODE_NO) 
+
+#Valid_data2 <-data.frame(common)
+
+Valid_data2 <- merge(Valid_data,Not_stand, by.x = "EPISODE_NO", by.y = "EPISODE_NO")
+
+write.csv(Valid_data2,  file="Valid_data2.csv")
+
+#Ext_epi <- read.csv("Ext_episode.csv")#epiode from old samples were brought forward to merge with the new samples
+#common2 <- intersect(Ext_epi$EPISODE_NO, BC2H$EPISODE_NO) #extract a common sample
+#common2 <-data.frame(common2)
+
+
+write.csv(BC2H, file="Work_data2.csv")#export data that are 
+
+#=============================================================================merge work data and manual data
+work_data <- read.csv("Work_data2.csv")
+valid_extracted <- read.csv("validation_extracted.csv")
+
+
+common2 <- merge(work_data,valid_extracted, by.x = "EPISODE_NO", by.y = "EPISODE_NO")
+#write.csv(common2, file="common2.csv")#export data that are 
+#Valid_data <-data.frame(common2)
+
+#BC2H <- work_data
+
+#===============================================================================
+#===============================ER
+table(common2$ER)
+
+ER <- common2[,c(19,46)]
+ER2 <- na.omit(ER)
+
+table(ER2)
+
+ER3 <- table(ER2$Oestrogen_final, ER2$ER)
+
+#ER3 <- data.frame(ER3)
+
+precision_ER <- diag(ER3) / rowSums(ER3)
+print(precision_ER)
+
+recall_ER <- diag(ER3) / colSums(ER3)
+print(recall_ER)
+
+Fscore <- 2*(precision_ER*recall_ER)/(precision_ER+recall_ER)
+
+library(irr)
+agree(ER2, tolerance=0)
+
+kappa2(ER2)
+
+agree1_tab <- table(ER2$Oestrogen_final,ER2$ER)#Manual computation
+agree1_tab_p <- prop.table(agree1_tab)
+P_o    <- sum(diag(agree1_tab_p))  #Summing the diagonal
+P_o
+
+#By-chance agreement:
+P_c<- sum(agree1_tab_p[1,]) * sum(agree1_tab_p[,1]) +
+  sum(agree1_tab_p[2,]) * sum(agree1_tab_p[,2])
+P_c
+
+Kappa<- (P_o - P_c)/(1-P_c)
+Kappa
+
+
+#=========================================================================================
+
+table(PR$Progesterone_final,exclude = NULL)
+PR <- common2[,c(18,47)]
+table(PR$PR,exclude = NULL)
+PR <- PR[which(PR$PR=="NEGATIVE"|PR$PR=="POSITIVE"), ]
+
+PR2 <- na.omit(PR)
+
+PR3 <- table(PR2$Progesterone_final,  PR2$PR)
+
+# PR3 <- data.frame( PR3)
+
+precision_PR <- diag( PR3) / rowSums( PR3)
+print(precision_PR)
+
+recall_PR <- diag( PR3) / colSums( PR3)
+print(recall_PR)
+
+Fscore <- 2*(precision_PR*recall_PR)/(precision_PR+recall_PR)
+
+library(irr)
+agree( PR2, tolerance=0)
+
+kappa2( PR2)
+
+agree1_tab2 <-table(PR2$Progesterone_final, PR2$PR)#Manual computation
+agree1_tab_p3 <- prop.table(agree1_tab2)
+P_o    <- sum(diag(agree1_tab_p3))  #Summing the diagonal
+P_o
+#==================================================================================HER2
+HER <- common2[,c(17,48)]
+table(HER$Her2_final,HER$HER2,exclude = NULL)
+
+HER2 <- na.omit(HER)
+
+HER3 <- table(HER2$Her2_final,HER2$HER2)
+
+# HER3 <- data.frame( HER3)
+
+Precision_HER <- diag( HER3) / rowSums( HER3)
+print(Precision_HER)
+
+recall_HER <- diag( HER3) / colSums(HER3)
+print(recall_HER)
+
+Fscore <- 2*(Precision_HER*recall_HER)/(Precision_HER+recall_HER)
+
+library(irr)
+agree( HER2, tolerance=0)
+
+kappa2(HER2)
+
+agree1_tab3 <-table(HER2$Her2_final, HER2$HER)#Manual computation
+agree1_tab_p3 <- prop.table(agree1_tab3)
+P_o    <- sum(diag(agree1_tab_p3))  #Summing the diagonal
+P_o
+#===============================================================================================GRADE 
+GRADE <- common2[,c(22,44)]
+
+GRADE$GRADE0 <-str_remove_all(GRADE$Histologic_grade, "\\bGRADE") 
+table(GRADE$GRADE1)
+table(GRADE$GRADE0,GRADE$GRADE1,exclude = NULL)
+GRADE <- GRADE[which(GRADE$GRADE1=="I"|GRADE$GRADE1=="II"|GRADE$GRADE1=="III"), ]
+GRADE2 <- na.omit(GRADE)
+
+GRADE3 <- table(GRADE2$GRADE0,GRADE2$GRADE1)
+
+# GRADE3 <- data.frame( GRADE3)
+
+Precision_GRADE <- diag( GRADE3) / rowSums( GRADE3)
+print(Precision_GRADE)
+avg2 <-sum(Precision_GRADE)/3
+
+
+recall_GRADE <- diag( GRADE3) / colSums(GRADE3)
+print(recall_GRADE)
+avg2 <-sum(Precision_GRADE)/3
+Fscore <- 2*(Precision_GRADE*recall_GRADE)/(Precision_GRADE+recall_GRADE)
+
+library(irr)
+agree( GRADE2, tolerance=0)
+GRADE2 <- GRADE2[,-1]
+kappa2(GRADE2)
+table(GRADE2$GRADE0)
+agree1_tab5 <-table(GRADE2$GRADE1, GRADE2$GRADE0)#Manual computation
+agree1_tab_p5 <- prop.table(agree1_tab5)
+P_5    <- sum(diag(agree1_tab_p5))  #Summing the diagonal
+P_5
+#===============================================================================KI67
+KI67 <- common2[,c(21,49)]
+
+KI67$KI672 <-ifelse(KI67$KI67==">14",">=14",
+                    ifelse(KI67$KI67=="<14","<14",NA))
+
+table(KI67$KI672)
+table(KI67$KI67)
+table(KI67$KI67_final2)
+KI67 <- KI67[which(KI67$KI672=="<14"|KI67$KI672==">=14"), ]
+table(KI67$KI672)
+table(KI67$KI67_final2,KI67$KI672,exclude = NULL)
+
+KI672 <- na.omit(KI67)
+table(KI672$KI67_final2,KI672$KI672,exclude = NULL)
+KI673 <- table(KI672$KI67_final2,KI672$KI672)
+
+# KI673 <- data.frame( KI673)
+
+Precision_KI67 <- diag( KI673) / rowSums( KI673)
+print(Precision_KI67)
+avg2 <-sum(Precision_KI67)/2
+
+
+recall_KI67 <- diag( KI673) / colSums(KI673)
+print(recall_KI67)
+avg2 <-sum(Precision_KI67)/3
+Fscore <- 2*(Precision_KI67*recall_KI67)/(Precision_KI67+recall_KI67)
+
+library(irr)
+agree( KI672, tolerance=0)
+KI672 <- KI672[,-2]
+kappa2(KI672)
+table(KI672$KI670)
+agree1_tab5 <-table(KI672$KI67_final2, KI672$KI672)#Manual computation
+agree1_tab_p5 <- prop.table(agree1_tab5)
+P_5    <- sum(diag(agree1_tab_p5))  #Summing the diagonal
+P_5
+#@==============================================================================LATERALITY
+BREASTS <- common2[,c(28,43)]
+
+table(BREASTS$breast_side4.x)
+table(BREASTS$breast_side4.y)
+table(BREASTS$BREASTS_final2)
+BREASTS <- BREASTS[which(BREASTS$breast_side4.y=="LEFTBREAST"|BREASTS$breast_side4.y=="RIGHTBREAST"), ]
+table(BREASTS$breast_side4.y)
+table(BREASTS$breast_side4.x,BREASTS$breast_side4.y,exclude = NULL)
+
+BREASTS2 <- na.omit(BREASTS)
+table(BREASTS2$breast_side4.x,BREASTS2$breast_side4.y,exclude = NULL)
+BREASTS3 <- table(BREASTS2$breast_side4.x,BREASTS2$breast_side4.y)
+
+# BREASTS3 <- data.frame( BREASTS3)
+
+Precision_BREASTS <- diag( BREASTS3) / rowSums( BREASTS3)
+print(Precision_BREASTS)
+avg2 <-sum(Precision_BREASTS)/2
+
+
+recall_BREASTS <- diag( BREASTS3) / colSums(BREASTS3)
+print(recall_BREASTS)
+avg2 <-sum(Precision_BREASTS)/2
+Fscore <- 2*(Precision_BREASTS*recall_BREASTS)/(Precision_BREASTS+recall_BREASTS)
+
+library(irr)
+agree( BREASTS2, tolerance=0)
+#BREASTS2 <- BREASTS2[,-2]
+kappa2(BREASTS2)
+table(BREASTS2$BREASTS0)
+agree1_tab6 <-table(BREASTS2$breast_side4.x, BREASTS2$breast_side4.y)#Manual computation
+agree1_tab_p7 <- prop.table(agree1_tab6)
+P_7    <- sum(diag(agree1_tab_p7))  #Summing the diagonal
+P_7
+#==============================================================================Histotype
+HISTYP  <- common2[,c(23,45)]
+table(HISTYP$Histo_grade)
+table(HISTYP$histyp5)
+HISTYP <- HISTYP[which(HISTYP$Histo_grade=="IDC"|HISTYP$Histo_grade=="OTHERS"), ]
+
+
+
+HISTYP2 <- na.omit(HISTYP)
+
+
+table(HISTYP$histyp5,HISTYP$Histo_grade,exclude = NULL)
+
+
+table(HISTYP$histyp5,HISTYP$Histo_grade,exclude = NULL)
+HISTYP<- table(HISTYP$histyp5,HISTYP$Histo_grade)
+
+# HISTYP 3 <- data.frame( HISTYP 3)
+
+Precision_HISTYP  <- diag( HISTYP) / rowSums( HISTYP)
+print(Precision_HISTYP )
+avg2 <-sum(Precision_HISTYP )/2
+
+recall_HISTYP  <- diag(HISTYP) / colSums(HISTYP)
+print(recall_HISTYP )
+avg2 <-sum(Precision_HISTYP )/2
+Fscore <- 2*(Precision_HISTYP *recall_HISTYP )/(Precision_HISTYP +recall_HISTYP )
+
+library(irr)
+agree( HISTYP, tolerance=0)
+#HISTYP 2 <- HISTYP 2[,-2]
+kappa2(HISTYP)
+table(HISTYP$HISTYP)
+agree1_tab6 <-table(HISTYP$histyp5, HISTYP$Histo_grade)#Manual computation
+agree1_tab_p7 <- prop.table(agree1_tab6)
+P_7    <- sum(diag(agree1_tab_p7))  #Summing the diagonal
+P_7
+
+#==============================================================================
+#==============================================================================Histotype from the manual coders
+MM_agree_final
+agree <-read.csv("MM_agree_final.csv", sep=",")
+str(agree)
+table(agree$Manual)
+table(agree$Machine)
+agree$Manual <- as.factor(agree$Manual)
+agree$Machine <- as.factor(agree$Machine)
+library(ggplot2)
+library(reshape2)
+agree1 <- agree[,-1]
+agree1$category <- row.names(agree1)
+agree2 <- melt(agree1, id.vars = "category")
+table(agree2$variable)
+agree2$value = substring(agree2$value,1,1)
+agree2$value <-as.factor(agree2$value)
+
+g2<-ggplot(agree2,aes(x=value,variable, fill=variable))+
+  geom_bar(position="fill")
+
+
+My_Theme = theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16),
+  axis.text.y = element_text(size = 14))
+g2+ My_Theme
+
+
+#==================================================Manual computation
+#install.packages("irr")
+library(irr)
+agree1 <- c("Manual", "Machine")
+agree1_tab <- table(agree[, agree1])
+agree1_tab
+
+
+agree1_tab_p <- prop.table(agree1_tab)
+P_o    <- sum(diag(agree1_tab_p))  #Summing the diagonal
+P_o
+
+#By-chance agreement:
+P_c<- sum(agree1_tab_p[1,]) * sum(agree1_tab_p[,1]) +
+  sum(agree1_tab_p[2,]) * sum(agree1_tab_p[,2])
+P_c
+
+Kappa<- (P_o - P_c)/(1-P_c)
+Kappa
+
+
+# HISTYP 3 <- data.frame( HISTYP 3)
+agree_tab <- table(agree$Manual,agree$Machine,exclude = NULL)
+Precision_HISTYP  <- diag(agree_tab) / rowSums(agree_tab)
+print(Precision_HISTYP )
+avg2 <-sum(Precision_HISTYP )/2
+
+recall_HISTYP  <- diag(agree_tab) / colSums(agree_tab)
+print(recall_HISTYP )
+avg2 <-sum(Precision_HISTYP )/2
+Fscore <- 2*(Precision_HISTYP *recall_HISTYP )/(Precision_HISTYP +recall_HISTYP )
+
+
+data(danishlc, package="GLMsData")
+
+
+#===============================================================================Age
+#===================================================ICC
+library(irr)
+ICC_data2 <- common2[,c(25,42)]
+ICC_data2$Age3 <- as.numeric(ICC_data2$Age3)
+summary(ICC_data2$AGE1)
+summary(ICC_data2$Age3)
+ICC_data2 <- ICC_data2[complete.cases(ICC_data2),]
+mean(ICC_data2$AGE1)
+plot(ICC_data2$Age3,ICC_data2$Age)
+abline(0,1, col="red",lwd=2)
+cor.test(ICC_data2$Age3,ICC_data2$Age)
+
+
+annot    <- c("AGE1", "Age3")
+
+icc(ICC_data2[,annot], model="twoway", type="agreement", unit="average")
+icc(ICC_data2[,annot], model="twoway", type="consistency", unit="average")

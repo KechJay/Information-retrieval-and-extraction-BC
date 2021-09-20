@@ -1,0 +1,847 @@
+rm(list=ls())
+
+options(java.parameters = "-Xmx8g")
+memory.limit(18000000)
+memory.limit()
+#rstudio.exe --max-ppsize=5e6
+options(expressions = 5e5)
+gc()
+
+#C:/Program Files/RStudio/bin>rstudio.exe --max-pp-size=500000
+#==========================import data
+rm(list = ls())
+getwd()
+setwd("C:/Users/user-pc/Desktop/Kech2")
+BC1 <- read.csv("BC_merged_NCR_imp_V2.csv")
+
+
+##=========================Pre-processing
+
+
+
+BC1A <- data.frame(NER=c("KI57","KI-67","KI/67","KAI67"),Dictionary = c("KI67","KI67","KI67","KI67"), stringsAsFactors = FALSE)
+BC1B = BC1
+text =  BC1$Text
+BC1B$text <- sapply(1:length(text), function(x) stringr::str_replace_all(text[x],setNames(as.character(BC1A$Dictionary), BC1A$NER)))
+
+
+#BC1A <- data.frame(NER=c("OESTROGEN RECEPTOR STATUS","OESTROGEN RECEPTOR","OESTROGEN RECEPTORS",
+#                         "ER","ESTROGEN RECEPTOR","OESTROGEN RECEPTOR ER","POSITIVE FOR OESTROGEN RECEPTOR",
+ #                        "OESTROGEN RECEPTOR AS WELL AS PROGESTERONE RECEPTOR ARE NEGATIVE","POSITIVE OESTROGEN RECEPTOR", 
+  #                       "NEGATIVE FOR OESTROGEN RECEPTOR","NEGATIVE OESTROGEN RECEPTOR","NEGATIVE ESTROGEN RECEPTOR",
+   #                      "OESTROGEN RECEPTOR WEAKLY","ER, PR AND HER2NEU NEGATIVE","ER AND PR POSITIVE","ER AND PR RECEPTOR NEGATIVITY",
+    #                     "ER+ >90%, PR+","ER, PR AND HER-2 STAINS POSITIVE","ER AND PR POSITIVE", "ER, PR AND HER2 POSITIVE","POSITIVE FOR ER","ER AND PR POSITIVE"),
+#Dictionary = c("OESTROGEN ","OESTROGEN ","OESTROGEN ", "OESTROGEN ","OESTROGEN ","OESTROGEN ","OESTROGEN POSITIVE ", 
+ #           "OESTROGEN NEGATIVE PROGESTERONE NEGATIVE","OESTROGEN POSITIVE","OESTROGEN NEGATIVE","OESTROGEN NEGATIVE", 
+  #          "OESTROGEN NEGATIVE","OESTROGEN NEGATIVE","OESTROGEN NEGATIVE PROGESTERONE NEGATIVE HER2 NEGATIVE", 
+   #         "OESTROGEN POSITIVE PROGESTERONE POSITIVE","OESTROGEN NEGATIVE PROGESTERONE NEGATIVE",
+    #        "OESTROGEN POSITIVE PROGESTERONE POSITIVE","OESTROGEN POSITIVE PROGESTERONE POSITIVE HER2 POSITIVE", 
+     #       "OESTROGEN POSITIVE PROGESTERONE POSITIVE","OESTROGEN POSITIVE PROGESTERONE POSITIVE HER2 POSITIVE", 
+     #       "OESTROGEN POSITIVE","OESTROGEN POSITIVE PROGESTERONE POSITIVE"), stringsAsFactors = FALSE)
+
+#BC1B = BC1
+#text =  BC1$Text
+#BC1B$text <- sapply(1:length(text), function(x) stringr::str_replace_all(text[x],setNames(as.character(BC1A$Dictionary), BC1A$NER)))
+
+
+#BC1$Text[[11]]
+#BC1B$text[[11]]
+#Repeat for all the target parameters
+#Export data for review
+#=====================================Import the review data
+rm(list=ls())
+BC0 <- read.csv("BC_merged_NCR_imp_V2.csv")
+
+BC10<-BC0[ ,-c(17,20,21)]
+
+BC1 <- BC0[ , c(17,20,21)]
+
+#===Recode the snomed morphology code
+library(stringr)
+#===Recode the snomed MORPHOLOGY.1 code
+library(stringr)
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}0$", replacement = "benign")
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}1$", replacement = "undecisive")
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}2$", replacement = "malignant")
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}3$", replacement = "malignant")
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}4$", replacement = "mal1")
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}5$", replacement = "mal2")
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}6$", replacement = "malignant")
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}7$", replacement = "met1")
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}8$", replacement = "met2")
+BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}9$", replacement = "met3")
+table(BC1$SNOMED_MORPHOLOGY)
+#==============================================================================================================
+
+BC1$Text[[5]]#examine text in column 5
+
+BC1$Text=gsub("\\*","",BC1$Text)#remove special* character, leave the space to normal
+
+BC1$Text=gsub("(\\(|\\))","",BC1$Text)#remove bracket open and leave normal space
+
+BC1$Text=gsub("\\:","",BC1$Text)#remove column
+
+BC1$Text <- gsub("\\s+"," ",BC1$Text)#remove extra spaces
+
+BC1$Text[[11]]
+BC1$Text[[5001]]
+#grepl("CLINICAL INFORMATION", BC1$Text)
+#Malig$Text=gsub("SCORE","",Malig$Text
+#BC1$Text=gsub("(\\*|\\(|\\)|\\:|\\s+)","",BC1$Text)
+#=============================================================Data Retrieval =
+
+#=================================================================HERNEU
+#HER2NEU
+BC1$Her2 <- stringr::str_extract(BC1$Text, "HERNEU.?(\\s*[^\\s*]*){17}")
+BC1$Her21 <- stringr::str_extract(BC1$Her2, "\\HERNEU.?\\s*\\WEAK|\\bEQUIVOCAL|\\bPOSITIVE|\\bPOSITVE|\\bSTRONG|\\bNEGATIVE|\\bPOSITIVITY|\\bNONCONTRIBUTORY|\\CAN NOT BE INTERPRETED")
+BC1$Her22 <- stringr::str_extract(BC1$Her2, "\\HERNEU.?\\s*(\\d|\\SCORE \\d|\\w*\\s*\\d|\\w*\\s*\\w*\\s*\\w*\\s*\\d)")
+
+table(is.na(BC1$Her2))
+table(is.na(BC1$Her21))
+table(is.na(BC1$Her22))
+table(BC1$Her22)
+table(BC1$Her21)
+
+#combining HER2NEU
+library(dplyr)
+BC1 <- BC1%>% 
+  mutate(Her23 = ifelse(is.na(Her21), Her22, Her21))
+table(is.na(BC1$Her23))
+
+table(BC1$Her23)
+
+
+BC1$Her2_final <- ifelse(BC1$Her23=="HERNEU STAIN YIELDS A 2","EQUIVOCAL",
+ifelse(BC1$Her23=="HERNEU STAIN SCORES A 2","EQUIVOCAL",
+ifelse(BC1$Her23=="HERNEU RECEPTOR 2","EQUIVOCAL",
+ifelse(BC1$Her23=="HERNEU STAIN 2","EQUIVOCAL",
+ifelse(BC1$Her23=="HERNEU HER 2","EQUIVOCAL",
+ifelse(BC1$Her23=="EQUIVOCAL","EQUIVOCAL",
+ifelse(BC1$Her23=="HERNEU IMMUNOHISTOCHEMISTRYNEGATIVE 0","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU NO STAINING SCORE 0","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU STAIN YIELS A 1","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU CONSTITUTED A 1","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU RECEPTORS 1","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU HERNEU IS 1","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU NEFATIVE 1","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU SCORE 0","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU 0","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU SCORE0","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU NU 1","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU I 0","NEGATIVE",
+ifelse(BC1$Her23=="NEGATIVE","NEGATIVE",
+ifelse(BC1$Her23=="HERNEU STAINING SCORE IS 3","POSITIVE",
+ifelse(BC1$Her23=="HERNEU HERCEPTESTSCORE 3","POSITIVE",
+ifelse(BC1$Her23=="HERNEU MORE THAN 30","POSITIVE",
+ifelse(BC1$Her23=="HERNEU MORE THAN 10","POSITIVE",
+ifelse(BC1$Her23=="HERNEU IN ABOUT 90","POSITIVE",
+ifelse(BC1$Her23=="HERNEU SCORE IS 3","POSITIVE",
+ifelse(BC1$Her23=="HERNEU ENRICHED 3","POSITIVE",
+ifelse(BC1$Her23=="HERNEU NU 3","POSITIVE",
+ifelse(BC1$Her23=="HERNEU ENU3","POSITIVE",
+ifelse(BC1$Her23=="POSITIVITY","POSITIVE",
+ifelse(BC1$Her23=="POSITIVE","POSITIVE",
+ifelse(BC1$Her23=="HERNEU 4","POSITIVE",
+ifelse(BC1$Her23=="HERNEU 3","POSITIVE",
+ifelse(BC1$Her23=="POSITVE","POSITIVE",
+ifelse(BC1$Her23=="STRONG","POSITIVE",NA
+))))))))))))))))))))))))))))))))))
+
+table(BC1$Her2_final)
+table(is.na(BC1$Her2_final))      
+
+#=================================================================================Progesterone.   https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4413070/
+BC1$Progesterone <- stringr::str_extract(BC1$Text, "\\bPROGESTERONE.?(\\s*[^\\s*]*){17}")#
+BC1$Progesterone1 <- stringr::str_extract(BC1$Progesterone, "\\bPROGESTERONE.?\\s*\\WEAK|\\bPOSITIVE|\\bPOSITVE|\\bSTRONG|\\bNEGATIVE|\\bPOSITIVITY")
+BC1$Progesterone2 <- stringr::str_extract(BC1$Progesterone, "\\bPROGESTERONE.?\\s*(\\d|\\SCORE \\d|\\w*\\s*\\d|\\w*\\s*\\w*\\s*\\w*\\s*\\d)")
+table(is.na(BC1$Progesterone1))
+table(is.na(BC1$Progesterone2))
+
+table(BC1$Progesterone1,exclude = NULL)
+table(BC1$Progesterone2,exclude = NULL)
+
+#combining PROGESTERONE
+library(dplyr)
+BC1 <- BC1%>% 
+  mutate(Progesterone3 = ifelse(is.na(Progesterone1), Progesterone2, Progesterone1))
+table(is.na(BC1$Progesterone3))
+table(BC1$Progesterone3)
+
+
+BC1$Progesterone_final <- 
+ifelse(BC1$Progesterone3=="NEGATIVE","NEGATIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE 0","NEGATIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE 1","NEGATIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE HERNEU AE1","NEGATIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE IMMUNOHISTOCHEMICAL STAINS AE1","NEGATIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE IN LESS THAN","NEGATIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE PROPORTION 1","NEGATIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE QUICK SCORE 0","NEGATIVE",
+ifelse(BC1$Progesterone3=="POSITIVE","POSITIVE",
+ifelse(BC1$Progesterone3=="POSITIVITY","POSITIVE",
+ifelse(BC1$Progesterone3=="POSITVE","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE 2","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE 3","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE A 2","NEGATIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE GREATER THAN 10","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE HER 2","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE IN ABOUT 7080","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE INTENSITY 3","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE INTENSITY OF 3","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE MODERATE 2","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE MODERATE STAINING 2","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE MODERATE STAINING IN 3","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE OF 7","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE P 2","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE P 3","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE PATHOLOGIST PROPORTION 5","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE PR 2","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE PR 3","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE PROPORTION 3","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE PROPORTION 4","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE PROPORTION 5","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE PROPORTION SCORE OF 4","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE STAIN SHOWED APPROXIMATELY 3","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE THE TUMOR IS 3","POSITIVE",
+ifelse(BC1$Progesterone3=="PROGESTERONE WEAK TO MODERATE 1","POSITIVE",
+ifelse(BC1$Progesterone3=="STRONG","POSITIVE", NA
+))))))))))))))))))))))))))))))))))))
+
+
+table(is.na(BC1$Progesterone_final))
+table(BC1$Progesterone_final)
+#=======================================OESTROGEN=========================================================https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4413070/
+BC1$Oestrogen <- stringr::str_extract(BC1$Text, "\\bOESTROGEN.?(\\s*[^\\s*]*){17}")#
+BC1$Oestrogen1 <- stringr::str_extract(BC1$Oestrogen, "\\bOESTROGEN.?\\s*\\WEAK|\\bPOSITIVE|\\bPOSITVE|\\bSTRONG|\\bNEGATIVE|\\bPOSITIVITY")
+BC1$Oestrogen2 <- stringr::str_extract(BC1$Oestrogen, "\\bOESTROGEN.?\\s*(\\d|\\SCORE \\d|\\w*\\s*\\d|\\w*\\s*\\w*\\s*\\w*\\s*\\d)")
+table(is.na(BC1$Oestrogen1))
+table(is.na(BC1$Oestrogen2))
+
+table(BC1$Oestrogen1,exclude = NULL)
+table(BC1$Oestrogen2,exclude = NULL)
+
+#combining OESTROGEN
+library(dplyr)
+BC1 <- BC1%>% 
+mutate(Oestrogen3 = ifelse(is.na(Oestrogen1), Oestrogen2, Oestrogen1))
+table(is.na(BC1$Oestrogen3))
+table(BC1$Oestrogen3)
+
+BC1$Oestrogen4 <- 
+ifelse(BC1$Oestrogen3=="NEGATIVE","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN 0","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN 1","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN ER 2","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN HORMONE RECEPTOR IN 1","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN PROGESTERONE HERNEU AE1","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN PROPORTION SCORE 1","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN RESULT FOCAL STAINING 1","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN SHOW INTENSITY OF 0","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WEAK 1","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WEAK INTENSITY 1","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WEAK NUCLEAR STAINING 1","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WEAK STAINING IN 1","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN PATHOLOGIST PROGESTERONE PROPORTION 1","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN ER 1","NEGATIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN SHOWS WEAK INTENSITY 1","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN 2","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN 7","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN 8","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN 9","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN A4","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN ALLRED SCORE 5 2","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN ALLRED SCORE OF 8","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN AND SHOWED INTENSITY 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN ER 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN ER INTENSITY OF 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN ESTIMATED AT ABOUT 8","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN FRAGMENTED SIZE 15","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN GREATER THAN 10","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN I 2","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN I 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN IMMUNOPOSITIVIT THE KI67","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN IN 9","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN MODERATE INTENSITY IN 5","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN MORE THAN 90","POSITIVE",NA
+))))))))))))))))))))))))))))))))))))
+
+       
+ BC1$Oestrogen5 <-  
+   ifelse(BC1$Oestrogen3=="OESTROGEN IN ABOUT 30","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN IN ABOUT 70","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN IN ABOUT 8090","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN INTENSITY 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN INTERMEDIATE 2","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN MODERATE 2","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN PROGESTERONE INTENSITY 3 2","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN PROPORTION SCORE OF 5","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN RECPTOR 2","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN SHOWING 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN STAIN SHOWED APPROXIMATELY 4","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN STATUSPOS PROPORTION 5","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN STONG NUCLEAR STAINING 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WAS IDENTIFIED 16","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WAS PROPORTION 5","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WAS REPORTED AS 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WEAK STAINING IN 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WEAK STAINING IN 6","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN WEAKMODERATE STAINING IN 6","POSITIVE",
+ifelse(BC1$Oestrogen3=="POSITIVE","POSITIVE",
+ifelse(BC1$Oestrogen3=="POSITIVITY","POSITIVE",
+ifelse(BC1$Oestrogen3=="POSITVE","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN AND GREATER THAN 1","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN PATHOLOGIST PROGESTERONE PROPORTION 3","POSITIVE",
+ifelse(BC1$Oestrogen3=="OESTROGEN PATHOLOGIST PROGESTERONE PROPORTION 4","POSITIVE",
+ifelse(BC1$Oestrogen3=="STRONG","POSITIVE",NA
+))))))))))))))))))))))))))
+
+
+BC1 <- BC1%>% 
+  mutate(Oestrogen_final = ifelse(is.na(Oestrogen4), Oestrogen5, Oestrogen4))
+table(is.na(BC1$Oestrogen_final))
+table(BC1$Oestrogen_final)
+table(is.na(BC1$Oestrogen_final))
+#===========================================================================================MOLECULAR SUBTYPE
+#====================================================Molecular subtype #Paper used for classification    https://www.researchgate.net/publication/259250187,https://doi.org/10.3389/fonc.2011.00012
+#https://doi.org/10.1148/radiol.2018171118
+library(dplyr)
+
+table(BC1$Her2_final,exclude = NULL)
+table(BC1$Progesterone_final,exclude = NULL)
+table(BC1$Oestrogen_final,exclude = NULL)
+
+
+
+
+BC1$Mol_subtype <- 
+ifelse(BC1$Oestrogen_final=="POSITIVE"& BC1$Progesterone_final=="POSITIVE"& BC1$Her2_final=="NEGATIVE","Luminal A",
+ifelse(BC1$Oestrogen_final=="POSITIVE"& BC1$Progesterone_final=="NEGATIVE"& BC1$Her2_final=="NEGATIVE","Luminal A",
+ifelse(BC1$Oestrogen_final=="NEGATIVE"& BC1$Progesterone_final=="POSITIVE"& BC1$Her2_final=="NEGATIVE","Luminal A",
+       
+ifelse(BC1$Oestrogen_final=="POSITIVE"& BC1$Progesterone_final=="POSITIVE"& BC1$Her2_final=="POSITIVE","Luminal B",
+ifelse(BC1$Oestrogen_final=="POSITIVE"& BC1$Progesterone_final=="NEGATIVE"& BC1$Her2_final=="POSITIVE","Luminal B",
+ifelse(BC1$Oestrogen_final=="NEGATIVE"& BC1$Progesterone_final=="POSITIVE"& BC1$Her2_final=="POSITIVE","Luminal B",
+       
+ifelse(BC1$Oestrogen_final=="NEGATIVE"& BC1$Progesterone_final=="NEGATIVE"& BC1$Her2_final=="NEGATIVE","TNBC",
+ifelse(BC1$Oestrogen_final=="NEGATIVE"& BC1$Progesterone_final=="NEGATIVE"& BC1$Her2_final=="POSITIVE","HER2-OE",NA
+       ))))))))
+
+
+table(BC1$Mol_subtype,exclude = NULL)
+table(is.na(BC1$Mol_subtype))
+
+
+#BC1$LUMINAL <-stringr::str_extract(BC1$Text, "\\bLUMINAL.?(\\s*[^\\s*]*){1,3}")
+#table(is.na(BC1$LUMINAL))
+
+
+#BC1$LUMINAL2 <-stringr::str_extract(BC1$Text, "(\\bLUMINAL\\s*(A|B))")
+#table(BC1$LUMINAL2)
+
+#BC1$LUMINAL3<- ifelse(BC1$LUMINAL2 =="LUMINALA","Luminal A",
+ #                      ifelse(BC1$LUMINAL2 =="LUMINALB","Luminal B",
+  #                            ifelse(BC1$LUMINAL2 =="LUMINAL A","Luminal A",
+   #                                  ifelse(BC1$LUMINAL2 =="LUMINAL B","Luminal B",NA))))
+#
+
+
+#table(is.na(BC1$LUMINAL3))
+
+#BC1 <- BC1%>% 
+ # mutate(Mol_subtype2 = ifelse(is.na(Mol_subtype), LUMINAL3, Mol_subtype))
+#table(BC1$Mol_subtype2)
+
+
+#=extract basal/TNBC
+#BC1$BASAL <-stringr::str_extract(BC1$Text, "(\\bBASAL)")
+#table(BC1$BASAL)
+#BC14$BASAL <- gsub('\\s*', '', BC14$BASAL)#remove spaces
+
+#BC1$BASAL2<- ifelse(BC1$BASAL =="BASAL","TNBC",NA)
+#table(BC1$BASAL2)
+
+
+#BC1 <- BC1%>% 
+ # mutate(Mol_subtype3 = ifelse(is.na(Mol_subtype2), BASAL2, Mol_subtype2))
+#table(BC1$Mol_subtype3)
+
+
+#BC1$TNBC <-stringr::str_extract(BC1$Text, "(\\TNBC|TRIPPLE NEGATIVE)")
+
+#table(BC1$TNBC)
+
+#BC1$TNBC2<- ifelse(BC1$TNBC =="TNBC","TNBC",
+ #                   ifelse(BC1$TNBC =="TRIPPLE NEGATIVE","TNBC",
+  #                  NA))
+
+#table(BC1$TNBC2)
+#BC1 <- BC1%>% 
+ # mutate(Mol_subtype4 = ifelse(is.na(Mol_subtype3), TNBC2, Mol_subtype3))
+#table(BC1$Mol_subtype4)
+
+#==================================================================================Extract where there is only molecular subtypes
+BC2 <-cbind(BC10,BC1)
+table(BC2$SNOMED_MORPHOLOGY.1, exclude = NULL)
+
+BC2A <-BC2[-c(6,11,12,13,16,18,22:25,27:30,32:37)]
+
+
+#BC2A$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC2A$SNOMED_MORPHOLOGY.1,pattern = "[M-](\\d*\\w*)", replacement = "OTHERS")#INOS
+#table(BC2A$SNOMED_MORPHOLOGY.1, exclude = NULL)
+
+#=======================================check for unknown codes
+#str(BC2b$RESULT_TEXT)
+BC2B <- BC2A[which(BC2A$Text!="UNKNOWN"),]
+
+unknown <- BC2A[which(BC2A$Text=="UNKNOWN"),]
+
+table(BC1$SNOMED_MORPHOLOGY.1)
+#===================================Complete molecular subtype
+
+BC2C <- BC2B[complete.cases(BC2B[,19]),]
+#====================================MALE
+table(BC2B$GENDER)
+BC2D<- BC2C[which(BC2C$GENDER!="M"),]
+MALE <- BC2C[which(BC2C$GENDER=="M"),]
+table(BC2C$SNOMED_MORPHOLOGY.1) 
+#====================================KI67#====================================================================KI67
+#we extracted the ki67 in the first column, commanding with the regular expression to look for KI67 with any charcters follows
+#succeeded by no word or word (\\W|\\w), followed by space or < or >, then succeeded by a one or more digit (\\d+) and the match it 
+#0 to 1x, succeeded by a %.
+#In the second line, we extracted from the ki67 column to have only the digit and %, with zero or more space before the % with the code
+#\\s*
+#========1
+BC2D$ki67  <- stringr::str_extract(BC2D$Text,"KI67(\\W|\\w)+[\\s|~|<|>\\d+](\\d+){0,1}(\\d*|%)")#cutting a wor
+BC2D$ki672 <- stringr::str_extract(BC2D$ki67 , "KI67(\\s+[^\\s+]+){1,17}")
+BC2D$ki673 <- stringr::str_extract(BC2D$ki672,"[\\s*|~|<|>|/](\\d){1,4}(\\s*%|\\d)")
+BC2D$ki674 <- stringr::str_extract(BC2D$ki672,"\\bKI67.?\\s*\\bLOW|\\bHIGH|\\bNEGATIVE|\\bPOSITIVE")
+#Malig$Text[295]
+table(is.na(BC2D$ki674))
+table(BC2D$ki674)
+library(dplyr)
+BC2D <- BC2D%>% 
+  mutate(KI67_combined = ifelse(is.na(ki673), ki674, ki673))
+table(is.na(BC2D$KI67_combined))
+
+table(BC2D$KI67_combined)
+library(stringr)
+BC2D$ki675 <- stringr::str_extract(BC2D$KI67_combined, "[^~%\\/]\\s*\\d{1,4}")#remove %,~ and / characters
+BC2D$ki675 <-as.factor(BC2D$ki675)#convert as a factor
+table(BC2D$ki675)
+BC2D$ki67_6 <- str_replace_all(BC2D$ki675, "[1]\\d{4}",  " ")#exclude number longer than 4 digits
+table(BC2D$ki67_6)
+BC2D$ki67_7 <- str_replace_all(BC2D$ki67_6, "[23456789]\\d{3}",  "HIGH1")#bin ki67 high categories written in 4 digits strating from 2
+table(BC2D$ki67_7)
+BC2D$ki67_8 <- str_replace_all(BC2D$ki67_7, "[1]\\d{2}(0|5|3)",  "HIGH2")#also bin high categories in four digit starting with 1 digit
+table(BC2D$ki67_8)
+BC2D$ki67_9 <- str_replace_all(BC2D$ki67_8, "[1]\\d{2}(4)",  "LOW1")#bin low ki67 categories starting with 1
+table(BC2D$ki67_9)
+BC2D$ki67_10 <- str_replace_all(BC2D$ki67_9, "[>][1](4|5)",  "HIGH3")#merge that starts with > follow by 1 and bound by 4 or 5
+table(BC2D$ki67_10)
+BC2D$ki67_11 <- str_replace_all(BC2D$ki67_10, "[>][23456789]\\d{0,1}(0|5)",  "HIGH4")#merge category that starts with > follow by
+#with digit from 2-9, then there might be a no digit or a digit and bound by 0 or 5
+table(BC2D$ki67_11)
+BC2D$ki67_12 <- str_replace_all(BC2D$ki67_11, "[<][25](0)",  "HIGH5")#start with <, follow by 2 or 5 and then bound by 0
+table(BC2D$ki67_12)
+BC2D$ki67_13 <- str_replace_all(BC2D$ki67_12, "[<]\\d{0,1}(0|1|2|3|4|5|8)",  "LOW2")#start with less than, no digi or digit, then bound by any of the numbers
+table(BC2D$ki67_13)
+
+BC2D$ki67_14 <- str_replace_all(BC2D$ki67_13, "[>]\\d{0,2}",  "LOW3")#merging the < with one or 2 digits
+table(BC2D$ki67_14)
+
+BC2D$ki67_15 <- str_replace_all(BC2D$ki67_14, "[1]00",  "HIGH6")
+table(BC2D$ki67_15)
+
+BC2D$ki67_16 <- str_replace_all(BC2D$ki67_15, "[57]\\d{1,2}(0)",  "LOW4")#merging strings 5-10,7-10 with one or 2 digits
+table(BC2D$ki67_16)
+
+BC2D$ki67_17 <- str_replace_all(BC2D$ki67_16, "(488|846)",  "")#remove digit
+table(BC2D$ki67_17)
+BC2D$ki67_18 <- str_replace_all(BC2D$ki67_17, "[1247]\\d{1}(5)",  "HIGH7")#three digits 5 was mistakenly typed instead of %
+table(BC2D$ki67_18)
+
+BC2D$ki67_19 <- str_replace_all(BC2D$ki67_18, "[^\\d][2-9][0-9]",  "HIGH8")#merge from 20 to 90
+table(BC2D$ki67_19)
+
+BC2D$ki67_19 <- str_replace_all(BC2D$ki67_18, "[^\\d][2-9][0-9]",  "HIGH8")#merge from 20 to 90
+table(BC2D$ki67_19)
+
+BC2D$ki67_20 <- str_replace_all(BC2D$ki67_19, "050",  "HIGH9")# search for the number 050,which is  50%
+table(BC2D$ki67_20)
+
+BC2D$ki67_21 <- str_replace_all(BC2D$ki67_20, "(15|16|17|18|19|20|25|30|35|40|45|50|55|60|65|70|75|80|90)",  "HIGH0")#merge from 20 to 90
+table(BC2D$ki67_21)
+
+BC2D$ki67_22 <- str_replace_all(BC2D$ki67_21, "[0]\\d{1,2}(1|4)",  "LOW5")#start with 0, find any 1 or 2 digits, then bound by 1 or 4
+table(BC2D$ki67_22)
+
+BC2D$ki67_23 <- str_replace_all(BC2D$ki67_22, "[^\\w+][10]\\d{1}",  "LOW6")#start with 0 or 1 and find any number that follows with one digit
+table(BC2D$ki67_23)
+
+BC2D$ki67_24 <- str_replace_all(BC2D$ki67_23, "[^\\w+](0|1|2|3|4|5|6|7|8|9)",  "LOW7")#merge all one/2 digit numbers,commenting out any preceding word
+table(BC2D$ki67_24)
+BC2D$ki67_24 <- as.factor(BC2D$ki67_24)
+
+BC2D$ki67_25 <- str_replace_all(BC2D$ki67_24, "\\b(HIGH)\\d{1}",  "HIGH")#merge all one/2 digit numbers,commenting out any preceding word
+table(BC2D$ki67_25)
+
+BC2D$ki67_26 <- str_replace_all(BC2D$ki67_25, "\\b(LOW)\\d{1}",  "LOW")#merge all one/2 digit numbers,commenting out any preceding word
+table(BC2D$ki67_26)
+
+#===========================================================
+BC2D$KI67_final <- ifelse(BC2D$ki67_26 ==" HIGH","HIGH",
+                          ifelse(BC2D$ki67_26 =="HIGH","HIGH"  ,
+                                 ifelse(BC2D$ki67_26== " LOW","LOW",
+                                        ifelse(BC2D$ki67_26== "LOW","LOW",
+                                               ifelse(BC2D$ki67_24=="10","LOW",
+                                                      ifelse(BC2D$ki67_24=="11","LOW",NA))))))
+
+
+table(BC2D$KI67_final, exclude = TRUE)
+
+BC2D$KI67_final2 <- ifelse(BC2D$KI67_final== "HIGH",">=14",
+                           ifelse(BC2D$KI67_final== "LOW","<14",NA))
+
+
+table(BC2D$KI67_final2, exclude = TRUE)
+
+#KI67 <- BC2H[complete.cases(BC2H[,c(20)]),]
+#=======================================================BLOOMRICHARDSON#================================================================================
+BC2D$BLOOM <-stringr::str_extract(BC2D$Text, "([^\\s*]+\\s*){2}\\b(BLOOMRICHARDSON|TOTAL SCORE).?(\\s+[^\\s+]+){10}")
+#BC2D$BLOOM2 <-stringr::str_extract(BC2D$BLOOM,"(\\b(BLOOMRICHARDSON|TOTAL SCORE).?\\s*(\\w{1,30}|\\d.*)\\s(\\w|\\d.*))")
+
+BC2D$BLOOM2 <-stringr::str_extract(BC2D$BLOOM,"\\bBLOOMRICHARDSON.?\\s*(\\d|\\bGRADE \\d)")
+BC2D$BLOOM3 <-stringr::str_extract(BC2D$BLOOM,"\\bSCORE.?\\s*\\d")
+
+#combining BLOOM
+library(dplyr)
+BC2D <- BC2D%>% 
+  mutate(BLOOM_comb = ifelse(is.na(BLOOM2), BLOOM3, BLOOM2))
+table(is.na(BC2D$BLOOM_comb))
+table(BC2D$BLOOM_comb)
+#=====10
+BC2D$Histo_grade <-stringr::str_extract(BC2D$Text, "(WELLD|POORD|MODRD|MODPOORD)")
+table(is.na(BC2D$Histo_grade))
+#====11
+BC2D$grade2a <-stringr::str_extract(BC2D$Text, "(\\bGRADE\\s+(I|II|III|IV|1|2|3|4)\\s+)")
+BC2D$grade2b <-stringr::str_extract(BC2D$Text, "(\\bGRADE\\s*(I|II|III|IV|1|2|3|4)s*)")
+
+#combining grade 1 and 2
+library(dplyr)
+BC2D <- BC2D%>% 
+  mutate(grade2 = ifelse(is.na(grade2a), grade2b, grade2a))
+table(is.na(BC2D$grade2))
+table(BC2D$grade2)
+
+
+BC2D$grade3 <-stringr::str_extract(BC2D$Text, "\\b(HIGHGRADE|LOWGRADE)")
+#BC2D$grade3 <-as.factor(BC2D$grade3)
+table(is.na(BC2D$grade3))
+table(BC2D$grade3)
+
+#===================================================================================#combining  all grades
+
+library(dplyr)
+BC2D <- BC2D%>% 
+  mutate(Grade_combined = ifelse(is.na(grade2), Histo_grade, grade2))
+BC2D <- BC2D%>% 
+  mutate(Grade_combined2 = ifelse(is.na(Grade_combined), BLOOM_comb, Grade_combined))
+
+table(is.na(BC2D$Grade_combined2))
+table(BC2D$Grade_combined2)
+
+str(BC2D)
+#BC2D$Grade_combined2 <- as.factor(BC2D$Grade_combined2)
+print(BC2D$Grade_combined2)
+
+BC2D <- BC2D%>% 
+  mutate(Grade_combined3 = ifelse(is.na(Grade_combined2), grade3, Grade_combined2))
+table(BC2D$Grade_combined3)
+table(is.na(BC2D$Grade_combined3))
+
+
+#===============================================================
+BC2D$Histologic_grade <- ifelse(BC2D$Grade_combined3=="BLOOMRICHARDSON 2","GRADE II",
+ifelse(BC2D$Grade_combined3=="BLOOMRICHARDSON 3","GRADE III",
+ifelse(BC2D$Grade_combined3=="GRADE 1 ","GRADE I",
+ifelse(BC2D$Grade_combined3=="GRADE 1","GRADE I",      
+ifelse(BC2D$Grade_combined3=="GRADE 2","GRADE II",
+       ifelse(BC2D$Grade_combined3=="GRADE 2 ","GRADE II",
+ifelse(BC2D$Grade_combined3=="GRADE 3","GRADE III",
+       ifelse(BC2D$Grade_combined3=="GRADE 3 ","GRADE III",
+ifelse(BC2D$Grade_combined3=="GRADE I","GRADE I",
+ifelse(BC2D$Grade_combined3=="GRADE I ","GRADE I",    
+ifelse(BC2D$Grade_combined3=="GRADE II ","GRADE II",
+ifelse(BC2D$Grade_combined3=="GRADE III ","GRADE III",
+ifelse(BC2D$Grade_combined3=="GRADE2","GRADE II",
+ifelse(BC2D$Grade_combined3=="GRADEI","GRADE I",
+ifelse(BC2D$Grade_combined3=="HIGHGRADE","GRADE III",
+ifelse(BC2D$Grade_combined3=="LOWGRADE","GRADE I",
+ifelse(BC2D$Grade_combined3=="MODRD","GRADE II",
+ifelse(BC2D$Grade_combined3=="POORD","GRADE III",
+ifelse(BC2D$Grade_combined3=="WELLD","GRADE I",
+ifelse(BC2D$Grade_combined3=="SCORE 9","GRADE III",
+       NA))))))))))))))))))))
+
+table(BC2D$Histologic_grade)
+table(is.na(BC2D$Histologic_grade))
+
+
+#=====================================================================================https://www.researchgate.net/publication/7315941 use for codding the codes
+#=====================================================================================https://www.researchgate.net/publication/7315941 use for codding the codes
+BC2D$histyp4<- str_replace_all(BC2D$SNOMED_MORPHOLOGY,pattern = "[^M-][80]223", replacement = "IDC")# IDC Invasive ductal carcinoma
+BC2D$histyp4<- str_replace_all(BC2D$histyp4,pattern = "[^M-][81]413", replacement = "IDC")
+BC2D$histyp4<- str_replace_all(BC2D$histyp4,pattern = "[^M-][82]013", replacement = "IDC")
+BC2D$histyp4<- str_replace_all(BC2D$histyp4,pattern = "[^M-][85]003", replacement = "IDC")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]013", replacement = "IDC")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]213", replacement = "IDC")#Invasive ductal carcinoma
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]203", replacement = "ILC")# Invasive lobular carcinoma
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][82]113", replacement = "IDC_ST")#ITC Invasive TUbular carcinoma
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]223", replacement = "IDLC")#Invasive ductal lobular carcinoma
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][84]803", replacement = "IDC_ST")# IMC
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]413", replacement = "OTHERS")#IOS
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]501", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][82]003", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][82]463", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][84]013", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][88]103", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]023", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]033", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]043", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]503", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]603", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][90]203", replacement = "OTHERS")#Other specified invasive histology
+
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]303", replacement = "IDC")#INOS
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][81]403", replacement = "IDC")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]003", replacement = "IDC")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]013", replacement = "IDC")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]033", replacement = "IDC")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]103", replacement = "IDC")#Non-specified invasive histology
+
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][82]302", replacement = "DCIS")#DCIS 
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]002", replacement = "DCIS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]005", replacement = "DCIS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]012", replacement = "DCIS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]015", replacement = "DCIS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]212", replacement = "DCIS")#Ductal carcinoma in situ
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]202", replacement = "LCIS")#Lobular carcinoma in situLCIS
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]205", replacement = "LCIS")
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]222", replacement = "DLCIS")# ductal +lobular carcinoma insitu
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]403", replacement = "IDC_ST")#Pagets
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]433", replacement = "OTHERS")# NIOS
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]042", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]032", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][84]805", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][84]802", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][82]002", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]702", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]505", replacement = "OTHERS")
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]502", replacement = "OTHERS")#other-specified non-invasive
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]102", replacement = "OTHERS")# NINOS
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]105", replacement = "OTHERS")#Non-specified non-invasive
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][82]102", replacement = "OTHERS")
+
+#BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]001", replacement = "UTCD")
+#BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]20", replacement = "UTCD")
+#BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]006", replacement = "UTCD")
+
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]072", replacement = "IDC_ST")# Invasive micropapillary carcinoma 
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]103", replacement = "IDC_ST")#Invasive micropapillary carcinoma
+
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][85]753", replacement = "OTHERS")#Metaplastic breast cancer
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]503", replacement = "IDC_ST")# Papillary carcinoma, NOS
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]703", replacement = "OTHERS")#Squamouse cell carcinoma
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][80]106", replacement = "Metastatic")# METC
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][84]533", replacement = "OTHERS")#IDPMC Intraductal papillary-mucinous carcinoma, invasiv
+
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][81]406", replacement = "Metastatic")# Metastatic NOS
+BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][83]433", replacement = "OTHERS")# Papillary carcinoma encapsulated
+
+table(BC2D$histyp4)
+
+#Drop cases that are noncarcinoma ie FRibroytic
+
+BC2E <- BC2D[!grepl("M-[01345679]\\d{4}",BC2D$histyp4),]#delete non carcinoma cases
+
+#BC2D3 <- BC2D2[!grepl("M-87403|M-88323|M-88333|M-88513|M-88533|M-88963|M-89003|M-89353",BC2D2$histyp4),]
+
+BC2E$histyp4 <- str_replace_all(BC2E$histyp4,pattern ="([^M-]\\d{4,5}|[^M-][8F]\\d{2,3})",replacement = "OTHERS")#group those cases with observed freq lower than 10 or equal to 10
+
+BC2E$histyp4  <- str_remove_all(BC2E$histyp4,".[^\\w{2,8}]")
+
+table(BC2E$histyp4)
+table(is.na(BC2E$histyp4))
+
+#write.csv(BC2D2, file = "Malig_extract_2204.csv")
+#write.csv(BC2D2, file = "Malig_extract_2204.csv")
+#=========================categorise histo type
+BC2E$histyp5 <- ifelse(BC2E$histyp4=="IDC","IDC",
+                             ifelse(BC2E$histyp4=="IDC_ST","IDC","OTHERS"
+                             ))
+table(BC2E$histyp5)
+#==================================================================================Manual AGE
+
+BC2E$Age = substring(BC2E$AGE_DISPLAY,1,2)#select where age = 2 digits
+table(BC2E$Age,exclude = NULL)
+
+#BC2E$Age <- BC2E[which(BC2E$Age!="Un"),]#remove where age is unknown
+
+BC2E$Age <- as.numeric(BC2E$Age)#
+summary(BC2E$Age)
+
+
+
+#BC2E <- BC2D[which(BC2D$Age>=18),]  
+#Less18 <- BC2D[which(BC2D$Age<18),]
+##Age
+#==================================================================================extracted age
+BC2E$Age2A <-stringr::str_extract(BC2E$Text,"\\bDOB\\s\\d+")
+BC2E$Age2B <-stringr::str_extract(BC2E$Text,"(\\d){1,3}\\s*(\\bYEARS|\\bYEAR|\\bYEAROLD|\\YRS)")
+BC2E$Age2C <-stringr::str_extract(BC2E$Text,"\\AGE\\s\\d+")
+table(BC2E$Age2A)
+
+BC2E <- BC2E%>% 
+  mutate(Age2C = ifelse(is.na(Age2B), Age2A, Age2B))
+table(BC2E$Age2C)
+table(is.na(BC1$Age2C))
+table(BC2E$Age2C)
+
+
+BC2E$Age2D <-str_remove_all(BC2E$Age2C, "\\bYEARS|\\bYEAR|\\bYEAROLD|YRS|\\bDOB") 
+BC2E$Age2D <- as.numeric(BC2E$Age2D)#
+table(is.na(BC2E$Age2D))
+table(BC2E$Age2D)
+BC2E$Age2D <- as.factor(BC2E$Age2D)#
+
+
+
+BC2E$Age2D<- str_replace_all(BC2E$Age2D,pattern = "19760609", replacement = "43")# work on the patient age with date of birth
+BC2E$Age2D<- str_replace_all(BC2E$Age2D,pattern = "590", replacement = "59")# 
+BC2E$Age2D<- str_replace_all(BC2E$Age2D,pattern = "564", replacement = "54")# 
+BC2E$Age2D<-as.numeric(BC2E$Age2D)
+summary(BC2E$Age2D)
+
+BC2E$Age2E <-str_remove_all(BC2E$Age2A, "\\bDOB") 
+table(BC2E$Age2E)
+
+
+BC2E$Age3 <- ifelse(BC2E$Age2D <=15, BC2E$Age2E, BC2E$Age2D)
+table(BC2E$Age3)
+
+BC2E$Age3<-as.numeric(BC2E$Age3)
+summary(BC2E$Age3)
+BC2E$Age3 <- ifelse(is.na(BC2E$Age3), BC2E$Age, BC2E$Age3)
+
+#BC2E$Age3 <- ifelse(is.na(BC2E$Age3), BC2E$Age, BC2E$Age3)
+#BC2E$Age3[BC2E$Age3 <14]<-NA
+
+summary(BC2E$Age3)
+
+
+hist(BC2E$Age3, exclude =NULL)
+summary(BC2E$Age)
+BC2E$Age_cat <- ifelse(BC2E$Age3 <40,"<40",
+                       ifelse(BC2E$Age3>=40 & BC2E$Age3<=49,"40-49",
+                              ifelse(BC2E$Age3>=50 & BC2E$Age3<=59,"50-59",
+                                     ifelse(BC2E$Age3>=60 & BC2E$Age3<=69,"60-69","70-104"))))
+
+table(BC2E$Age_cat, exclude =NULL)
+#================================================= Manual Year
+
+BC2E$year2 <-as.Date(BC2E$REVIEW_DATE,format = "%Y/%m/%d")
+format(BC2E$year2)
+BC2E$year2 = substring(BC2E$year2,1,4) #this has to do with the year
+table(BC2E$year2)
+#==========================================BREAST SIDE====================================================================================================
+BC2E$breast_side <-  stringr::str_extract(BC2E$Text, "(LEFTBREAST|RIGHTBREAST|LRBREAST|LEFT,B|RIGHT,B )")
+table(is.na(BC2E$breast_side))
+BC2E$breast_side2 <-  stringr::str_extract(BC2E$Text, "(LEFT|RIGHT)")
+
+BC2E <- BC2E%>% 
+  mutate(breast_side3 = ifelse(is.na(breast_side), breast_side2, breast_side))
+table(is.na(BC2E$breast_side3))
+table(BC2E$breast_side3)
+
+BC2E$breast_side3 <- gsub('\\s*', '', BC2E$breast_side3)#remove white spaces in the column
+
+BC2E$breast_side4 <- ifelse(BC2E$breast_side3 =="LEFTBREAST","LEFTBREAST",
+                           ifelse(BC2E$breast_side3=="LEFT","LEFTBREAST",
+                                  ifelse(BC2E$breast_side3=="RIGHTBREAST","RIGHTBREAST",
+                                         ifelse(BC2E$breast_side3=="LRBREAST","LRBREAST",
+                                                ifelse(BC2E$breast_side3=="RIGHT","RIGHTBREAST",  
+                                                       NA)))))
+
+table(BC2E$breast_side4)
+#==========================================================================================================================13
+BC2E$histyp <- stringr::str_extract(BC2E$Text,"([^\\s+]+\\s+){0}\\b(DCIS|LCIS|IDC|ILC|MEDLCA|INFBCA|TUBLBC|MUCAR|NST|IBCNST|METDC|METIC).?")
+table(is.na(BC2E$histyp))
+
+
+
+
+#=====5
+#==============================================================YEAR=====================================We use a more complete case 
+#BC1$YEAR <-stringr::str_extract(BC1$Text,"\\d\\d[\\/]\\d\\d[\\/]\\d\\d\\d\\d")  
+#table(is.na(BC1$YEAR))
+table(BC1$YEAR)
+#======================================================================================================remove variables not needed
+BC2F <-BC2E[-c(20:47,49:60,62,65:69,73:75,77)]
+
+#======================================================================================================Drop non primary malignat cancer
+table(BC2F$SNOMED_MORPHOLOGY.1)
+BC2G <- BC2F[which(BC2F$SNOMED_MORPHOLOGY.1=="malignant"), ]
+
+table(BC2G$SNOMED_MORPHOLOGY.1)
+table(BC2H$SNOMED_MORPHOLOGY)
+#======================================================================================================Remove duplicate
+BC2H <- BC2G[!duplicated(BC2G$EPISODE_NO), ] #HERE
+Duplicate <- BC2G[duplicated(BC2G$EPISODE_NO), ] #HERE
+
+
+
+table(BC2H$Age_cat,exclude = NULL)
+#=======================================================================Race
+
+
+table(BC2H$RACE)
+
+RACE <- BC2H[which(BC2H$RACE=="S"), ]
+BC2H$Race2 <- ifelse(BC2H$imp_pop == "A","Asian",
+                       ifelse(BC2H$imp_pop=="B", "Black",
+                              ifelse(BC2H$imp_pop== "C", "Colored",
+                                     ifelse(BC2H$imp_pop == "W", "White",NA))))
+
+table(BC2H$Race2)
+BC2H$Race3 <- ifelse(BC2H$RACE == "A","Black",
+                     ifelse(BC2H$RACE=="B", "Black",
+                            ifelse(BC2H$RACE== "C", "Colored",
+                                   ifelse(BC2H$RACE == "I","Asian",
+                                            ifelse(BC2H$RACE == "S","Asian",
+                                   ifelse(BC2H$RACE == "W", "White",NA))))))
+
+
+table(BC2H$Race3)
+
+
+BC2H <- BC2H%>% 
+  mutate(Race4 = ifelse(is.na(Race3), Race2, Race3))
+table(is.na(BC2H$Race4))
+table(BC2H$Race4)
+
+
+

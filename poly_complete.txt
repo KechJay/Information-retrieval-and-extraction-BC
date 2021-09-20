@@ -1,0 +1,172 @@
+#===============================================================================Univariate analysis
+getwd()
+setwd( "C:/Users/user-pc/Desktop/Kech2")
+BC2H <- read.csv("work_data2.csv")#import data
+table(BC2H$year2)
+table(BC2H$Age_cat,exclude =NULL)
+
+table(BC2H$breast_side4,exclude =NULL)
+
+table(BC2H$Histologic_grade,exclude =NULL)
+BC2H$Histologic_grade2<- ifelse(BC2H$Histologic_grade=="GRADE I","I",
+                                ifelse( BC2H$Histologic_grade=="GRADE II", "II",
+                                        ifelse(BC2H$Histologic_grade=="GRADE II ", "II",
+                                               ifelse(BC2H$Histologic_grade=="GRADE III", "III",NA))))
+
+
+
+table(BC2H$Histologic_grade2,exclude =NULL)
+table(BC2H$Race4,exclude =NULL)
+
+table(BC2H$histyp5,exclude =NULL)
+
+table(BC2H$Oestrogen_final,exclude =NULL)
+
+
+table(BC2H$Progesterone_final,exclude =NULL)
+
+table(BC2H$Her2_final,exclude =NULL)
+
+table(BC2H$Mol_subtype,exclude =NULL)
+BC2H$Mol_subtype2 <- ordered(BC2H$Mol_subtype, levels =c("Luminal A", "Luminal B", "HER2-OE", "TNBC"))
+levels(BC2H$Mol_subtype2)<- c("LuminalA", "LuminalB", "HER2OE", "TNBC")
+table(BC2H$Mol_subtype2,exclude =NULL)
+table(BC2H$KI67_final2,exclude =NULL)
+table(BC2H$Race4,exclude =NULL)
+#===============================================================================
+#=========================================================================Polytomous analysis===================================
+table(BC2H$Mol_subtype4)
+table(BC2H$Age_cat, exclude = NULL)
+
+BC2H$Mol_subtype2 <-as.factor(BC2H$Mol_subtype2)
+
+BC2H$Mol_subtype2 <- relevel(BC2H$Mol_subtype2, ref ="Luminal A")
+table(BC2H$Age_cat,BC2H$Mol_subtype2,exclude = NULL)
+table(BC2H$Mol_subtype2)
+require(nnet)
+
+Age_1 <- multinom(Mol_subtype2 ~ Age_cat, data = BC2H)
+summary(Age_1)
+# coef(summary(model1))
+exp <- exp(coef(Age_1))
+
+?confint
+ci <- exp(confint(Age_1))
+exp(cbind(OR = coef(Age_1), ci))
+exp(cbind(OR = coef(Age_1)))
+
+
+lci <-exp-(2*(summary(Age_1)$standard.errors))
+Uci <-exp+(2*(summary(Age_1)$standard.errors))
+exp(coef())
+exp(cbind(OR = coef(m), ci))
+
+z <- summary(Age_1)$coefficients/summary(Age_1)$standard.errors
+
+p <- (1 - pnorm(abs(z), 0, 1))*2
+#pnorm(abs(z), lower.tail=TRUE)*2
+?pnorm
+
+
+#==============================================================KI67
+table(BC2H$KI67_final2,BC2H$Mol_subtype2, exclude = NULL)
+
+
+KI67 <- multinom(Mol_subtype2 ~ KI67_final2, data = BC2H)
+
+summary(KI67)
+exp <- exp(coef(KI67))
+ci <- exp(confint(KI67))
+
+z1 <- summary(KI67)$coefficients/summary(KI67)$standard.errors
+
+p1 <- (1 - pnorm(abs(z1), 0, 1))*2
+
+#===============================Histology grade
+table(BC2H$Histologic_grade2, exclude = NULL)
+
+#Malig_pap6$Histologic_grade2[is.na(Malig_pap6$Histologic_grade)]<-"Notreported"
+table(BC2H$Histologic_grade2,BC2H$Mol_subtype2, exclude = NULL)
+
+Histo_grade <- multinom(Mol_subtype2 ~ Histologic_grade2, data = BC2H)
+exp <- exp(coef(Histo_grade))
+ci <- exp(confint(Histo_grade))
+z2 <- summary(Histo_grade)$coefficients/summary(Histo_grade)$standard.errors
+
+p2 <- (1 - pnorm(abs(z2), 0, 1))*2
+
+#=====================================breast side-laterality
+table(BC2H$Mol_subtype2, exclude = NULL)
+#Malig_pap6$breast_side4[is.na(Malig_pap6$breast_side4)]<-"Notreported"
+
+Malig_pap6$breast_side5 <-ifelse(Malig_pap6$Mol_subtype2=="LEFTBREAST","LEFTBREAST",
+                                 ifelse( Malig_pap6$breast_side4=="RIGHTBREAST","RIGHTBREAST",NA))
+
+table(BC2H$breast_side4, exclude = NULL)
+BC2H$breast_side4 <- as.factor(BC2H$breast_side4)
+BC2H$breast_side4 <- relevel(BC2H$breast_side4, ref ="LEFTBREAST")
+table(BC2H$breast_side4,BC2H$Mol_subtype2, exclude = NULL)
+
+
+breast_side4 <- multinom(Mol_subtype2 ~ breast_side4, data = BC2H)
+exp <- exp(coef(breast_side4))
+ci <- exp(confint(breast_side4))
+
+z3 <- summary(breast_side4)$coefficients/summary(breast_side4)$standard.errors
+p3 <- (1 - pnorm(abs(z3), 0, 1))*2
+
+#============================================================
+table(Malig_pap6$histyp4)
+table(Malig_pap6$year2)
+
+#=========================================
+table(Malig_pap6$year2)
+
+table(Malig_pap6$Histologic_grade,exclude = NULL)
+#====================================================Race
+BC2H$Race4 <- as.factor(BC2H$Race4)
+BC2H$Race4 <- relevel(BC2H$Race4, ref ="Black")
+
+table(BC2H$Race4,BC2H$Mol_subtype2, exclude = NULL)
+
+Race4 <- multinom(Mol_subtype2 ~ Race4, data = BC2H) 
+summary(Race4)
+# coef(summary(model1))
+exp <- exp(coef(Race4))
+
+?confint
+ci <- exp(confint(Race4))
+exp(cbind(OR = coef(Race4)))
+
+
+z5 <- summary(Race4)$coefficients/summary(Race4)$standard.errors
+p5 <- (1 - pnorm(abs(z5), 0, 1))*2
+
+#==========================================================
+#====================================================histo_type
+table(BC2H$histyp5)
+BC2H$histyp5 <- as.factor(BC2H$histyp5)
+BC2H$histyp5 <- relevel(BC2H$histyp5, ref ="IDC")
+
+table(BC2H$histyp5,BC2H$Mol_subtype2, exclude = NULL)
+
+histype <- multinom(Mol_subtype2 ~ histyp5, data = BC2H)
+summary(histype)
+# coef(summary(model1))
+exp <- exp(coef(histype))
+
+?confint
+ci <- exp(confint(histype))
+exp(cbind(OR = coef(histype)))
+
+
+z6 <- summary(histype)$coefficients/summary(histype)$standard.errors
+p6 <- (1 - pnorm(abs(z6), 0, 1))*2
+
+
+#========================================================ALL
+ALL_var <- multinom(Mol_subtype3 ~ Race+KI67_final2+Histologic_grade+Age_cat, data = Malig_pap6)
+summary(race)
+
+z6 <- summary(ALL_var)$coefficients/summary(ALL_var)$standard.errors
+p6 <- (1 - pnorm(abs(z6), 0, 1))*2

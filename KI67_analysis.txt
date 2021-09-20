@@ -1,0 +1,328 @@
+table(imputed$KI67_final2)
+table(imputed$Age_cat, exclude = NULL)
+
+imputed$KI67_final2 <-as.factor(imputed$KI67_final2)
+
+table(imputed$Age_cat,imputed$KI67_final2,exclude = NULL)
+table(imputed$KI67_final2)
+require(nnet)
+#======================================================================Age
+str(imputed)
+Age_1 <- glm(KI67_final2 ~ Age_cat,  family="binomial", data = imputed)
+summary(Age_1)
+# coef(summary(model1))
+exp <- exp(coef(Age_1))
+
+?confint
+ci <- exp(confint(Age_1))
+exp(cbind(OR = coef(Age_1), ci))
+exp(cbind(OR = coef(Age_1)))
+
+
+lci <-exp-(2*(summary(Age_1)$standard.errors))
+Uci <-exp+(2*(summary(Age_1)$standard.errors))
+exp(coef())
+exp(cbind(OR = coef(m), ci))
+
+z <- summary(Age_1)$coefficients/summary(Age_1)$standard.errors
+
+p <- (1 - pnorm(abs(z), 0, 1))*2
+#pnorm(abs(z), lower.tail=TRUE)*2
+?pnorm
+
+
+#==============================================================Oestrogen
+table(imputed$Oestrogen_final,imputed$KI67_final2, exclude = NULL)
+
+
+Oestr <- glm(Oestrogen_final ~ KI67_final2, family="binomial",data = imputed)
+
+summary(Oestr)
+exp <- exp(coef(Oestr))
+ci <- exp(confint(Oestr))
+
+z1 <- summary(Oestr)$coefficients/summary(Oestr)$standard.errors
+
+p1 <- (1 - pnorm(abs(z1), 0, 1))*2
+#==============================================================Progesterone
+table(imputed$Progesterone_final,imputed$KI67_final2, exclude = NULL)
+
+Progesterone <- glm(KI67_final2 ~ Progesterone_final, family="binomial",data = imputed)
+
+summary(Progesterone)
+exp <- exp(coef(Progesterone))
+ci <- exp(confint(Progesterone))
+
+z1 <- summary(Progesterone)$coefficients/summary(Progesterone)$standard.errors
+
+p1 <- (1 - pnorm(abs(z1), 0, 1))*2
+#==============================================================Herneu
+table(imputed$Her2_final,imputed$KI67_final2, exclude = NULL)
+
+Progesterone <- glm(KI67_final2 ~ Her2_final, family="binomial",data = imputed)
+
+summary(Progesterone)
+exp <- exp(coef(Progesterone))
+ci <- exp(confint(Progesterone))
+
+z1 <- summary(Progesterone)$coefficients/summary(Progesterone)$standard.errors
+
+p1 <- (1 - pnorm(abs(z1), 0, 1))*2
+
+#===============================Histology grade
+table(imputed$Histologic_grade, exclude = NULL)
+
+#Malig_pap6$Histologic_grade2[is.na(Malig_pap6$Histologic_grade)]<-"Notreported"
+table(imputed$Histologic_grade,imputed$KI67_final2, exclude = NULL)
+
+Histo_grade <- glm(KI67_final2 ~ Histologic_grade, family="binomial",data = imputed)
+summary(Histo_grade)
+exp <- exp(coef(Histo_grade))
+ci <- exp(confint(Histo_grade))
+z2 <- summary(Histo_grade)$coefficients/summary(Histo_grade)$standard.errors
+
+p2 <- (1 - pnorm(abs(z2), 0, 1))*2
+
+#=====================================breast side-laterality
+table(imputed$Mol_subtype2, exclude = NULL)
+#Malig_pap6$breast_side4[is.na(Malig_pap6$breast_side4)]<-"Notreported"
+
+
+table(imputed$breast_side4, exclude = NULL)
+imputed$breast_side4 <- as.factor(imputed$breast_side4)
+imputed$breast_side4 <- relevel(imputed$breast_side4, ref ="LEFTBREAST")
+table(imputed$breast_side4,imputed$KI67_final2, exclude = NULL)
+
+
+breast_side4 <- glm(KI67_final2 ~ breast_side4, family="binomial",data = imputed)
+exp <- exp(coef(breast_side4))
+ci <- exp(confint(breast_side4))
+
+z3 <- summary(breast_side4)$coefficients/summary(breast_side4)$standard.errors
+p3 <- (1 - pnorm(abs(z3), 0, 1))*2
+
+#============================================================
+table(Malig_pap6$histyp4)
+table(Malig_pap6$year2)
+
+#=========================================
+table(Malig_pap6$year2)
+
+table(Malig_pap6$Histologic_grade,exclude = NULL)
+#====================================================Race
+imputed$Race4 <- as.factor(imputed$Race4)
+imputed$Race4 <- relevel(imputed$Race4, ref ="Black")
+
+table(imputed$Race4,imputed$KI67_final2, exclude = NULL)
+
+Race4 <- glm(KI67_final2 ~ Race4, family="binomial", data = imputed) 
+summary(Race4)
+# coef(summary(model1))
+exp <- exp(coef(Race4))
+
+?confint
+ci <- exp(confint(Race4))
+exp(cbind(OR = coef(Race4)))
+
+
+z5 <- summary(Race4)$coefficients/summary(Race4)$standard.errors
+p5 <- (1 - pnorm(abs(z5), 0, 1))*2
+
+#==========================================================
+#=============================================================================histo_type
+table(imputed$histyp5)
+imputed$histyp5 <- as.factor(imputed$histyp5)
+imputed$histyp5 <- relevel(imputed$histyp5, ref ="IDC")
+
+table(imputed$histyp5,imputed$KI67_final2, exclude = NULL)
+
+histype <- glm(KI67_final2 ~ histyp5, family="binomial", data = imputed)
+summary(histype)
+# coef(summary(model1))
+exp <- exp(coef(histype))
+
+?confint
+ci <- exp(confint(histype))
+exp(cbind(OR = coef(histype)))
+
+
+z6 <- summary(histype)$coefficients/summary(histype)$standard.errors
+p6 <- (1 - pnorm(abs(z6), 0, 1))*2
+
+#=============================================================================Molecular subtype
+
+imputed$Mol_subtype2 <- ordered(imputed$Mol_subtype, levels =c("Luminal A", "Luminal B", "HER2-OE", "TNBC"))
+levels(imputed$Mol_subtype2)<- c("LuminalA", "LuminalB", "HER2OE", "TNBC")
+table(imputed$Mol_subtype2,exclude =NULL)
+table(imputed$Mol_subtype2)
+imputed$Mol_subtype2 <- as.factor(imputed$Mol_subtype2)
+imputed$Mol_subtype <- relevel(imputed$Mol_subtype, ref ="Luminal A")
+
+table(imputed$Mol_subtype2,imputed$KI67_final2, exclude = NULL)
+
+Mol <- glm(KI67_final2 ~ Mol_subtype, family="binomial", data = imputed)
+summary(Mol)
+# coef(summary(model1))
+exp <- exp(coef(Mol))
+
+?confint
+ci <- exp(confint(Mol))
+exp(cbind(OR = coef(Mol)))
+
+
+z7 <- summary(Mol)$coefficients/summary(Mol)$standard.errors
+p7 <- (1 - pnorm(abs(z7), 0, 1))*2
+
+
+
+
+Mol <- glm( Histologic_grade ~ Race4, family="binomial", data = imputed)
+
+summary()
+
+
+
+
+
+
+
+
+
+
+#===================================================================================descriptive statistics
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+fre_molp <- imputed %>%
+  count(year2, KI67_final2) %>%
+  group_by(year2) %>%
+  mutate(n = n/sum(n) * 100) %>%
+  tidyr::pivot_wider(names_from = KI67_final2, values_from = n, 
+                     values_fill = list(n = 0))
+
+fre_molp <- as.data.frame(fre_molp)
+
+data <- cbind(fre_molp[1], stack(fre_molp[2:3]))
+data$year2 <- as.factor(data$year2)
+
+data$values <- round(data$values, digits = 1)
+g2 <- ggplot(data, aes(year2, values,group=ind,color =ind)) +
+  geom_point(size=2) +
+  geom_line(aes( group = ind,color =ind), size = 1) +
+  labs(x = "Year", y = "No of diagnosis")
+My_Theme = theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16),
+  axis.text.y = element_text(size = 14))
+g2+ My_Theme
+#=============================================================Incidence cases year and mol_sub
+g3 <- ggplot(data, aes(x = year2, y = values, fill = ind, label = values)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Year of diagnosis", y = "Proportion of cases (%)")+
+  geom_text(size = 4, position = position_stack(vjust = 0.5))
+
+My_Theme = theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16),
+  axis.text.y = element_text(size = 14))
+g3+ My_Theme
+#=================================================================================================================
+#==============================================================Incidence cases age vs ki67
+
+table(imputed$Age_cat)
+Age_molp <- imputed %>%
+  count(Age_cat, KI67_final2) %>%
+  group_by(Age_cat) %>%
+  mutate(n = n/sum(n) * 100) %>%
+  tidyr::pivot_wider(names_from = KI67_final2, values_from = n, 
+                     values_fill = list(n = 0))
+
+Age_molp <- as.data.frame(Age_molp)
+
+data2 <- cbind(Age_molp[1], stack(Age_molp[2:3]))
+data2$Age_cat <- as.factor(data2$Age_cat)
+
+data2$values <- round(data2$values, digits = 1)
+
+#data3 <- data2[complete.cases(data2$Age_cat),]
+
+g4 <- ggplot(data2, aes(x = Age_cat, y = values, fill = ind, label = values)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Age category", y = "Proportion of cases (%)")+
+  geom_text(size = 4, position = position_stack(vjust = 0.5))
+
+My_Theme = theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16),
+  axis.text.y = element_text(size = 14))
+g4+ My_Theme
+#===================================================================Race molecular subtype
+
+Age_molp <- imputed %>%
+  count(Race4, KI67_final2) %>%
+  group_by(Race4) %>%
+  mutate(n = n/sum(n) * 100) %>%
+  tidyr::pivot_wider(names_from = KI67_final2, values_from = n, 
+                     values_fill = list(n = 0))
+
+Age_molp <- as.data.frame(Age_molp)
+
+data2 <- cbind(Age_molp[1], stack(Age_molp[2:3]))
+data2$Race4 <- as.factor(data2$Race4)
+
+data2$values <- round(data2$values, digits = 1)
+
+#data3 <- data2[complete.cases(data2$Race4),]
+
+g4 <- ggplot(data2, aes(x = Race4, y = values, fill = ind, label = values)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Race", y = "Proportion of cases (%)")+
+  geom_text(size = 4, position = position_stack(vjust = 0.5))
+
+My_Theme = theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16),
+  axis.text.y = element_text(size = 14))
+g4+ My_Theme
+#===============================================================================
+
+Asian <- imputed[which(imputed$Race4=="Asian"),]
+Black <- imputed[which(imputed$Race4=="Black"),]
+Colored <- imputed[which(imputed$Race4=="Colored"),]
+White <- imputed[which(imputed$Race4=="White"),]
+
+
+table(Asian$Age_cat,exclude = NULL)
+Age_molp <- Colored %>%
+  count(Age_cat, KI67_final2) %>%
+  group_by(Age_cat) %>%
+  mutate(n = n/sum(n) * 100) %>%
+  tidyr::pivot_wider(names_from = KI67_final2, values_from = n, 
+                     values_fill = list(n = 0))
+
+Age_molp <- as.data.frame(Age_molp)
+
+data2 <- cbind(Age_molp[1], stack(Age_molp[2:3]))
+data2$Age_cat <- as.factor(data2$Age_cat)
+
+data2$values <- round(data2$values, digits = 1)
+
+#data3 <- data2[complete.cases(data2$Age_cat),]
+
+g4 <- ggplot(data2, aes(x = Age_cat, y = values, fill = ind, label = values)) +
+  geom_bar(stat = "identity",width = 0.7) +
+  labs(x = "Age category", y = "Proportion of molecular subtype (%)")+
+  geom_text(size = 4, position = position_stack(vjust = 0.2))+
+  theme(aspect.ratio = 2/1)
+
+My_Theme = theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16),
+  axis.text.y = element_text(size = 14))
+g4+ My_Theme
+#plot for other racial groups
