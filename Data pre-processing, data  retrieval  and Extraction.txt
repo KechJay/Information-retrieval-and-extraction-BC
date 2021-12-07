@@ -544,7 +544,7 @@ BC2D$grade3 <-stringr::str_extract(BC2D$Text, "\\b(HIGHGRADE|LOWGRADE)")
 table(is.na(BC2D$grade3))
 table(BC2D$grade3)
 
-#===================================================================================#combining  all grades
+#combining  all grades
 
 library(dplyr)
 BC2D <- BC2D%>% 
@@ -565,7 +565,7 @@ table(BC2D$Grade_combined3)
 table(is.na(BC2D$Grade_combined3))
 
 
-#===============================================================
+#further combining based on the categories
 BC2D$Histologic_grade <- ifelse(BC2D$Grade_combined3=="BLOOMRICHARDSON 2","GRADE II",
 ifelse(BC2D$Grade_combined3=="BLOOMRICHARDSON 3","GRADE III",
 ifelse(BC2D$Grade_combined3=="GRADE 1 ","GRADE I",
@@ -589,11 +589,13 @@ ifelse(BC2D$Grade_combined3=="SCORE 9","GRADE III",
        NA))))))))))))))))))))
 
 table(BC2D$Histologic_grade)
-table(is.na(BC2D$Histologic_grade))
+table(is.na(BC2D$Histologic_grade))#checking number of missing an dnon-missing rows
 
+#=============================Histological type
+#the links below were used as a guide to categorise histological type
+#==https://www.researchgate.net/publication/7315941 #use for codding the codes
+#=https://www.researchgate.net/publication/7315941 #use for codding the codes
 
-#=====================================================================================https://www.researchgate.net/publication/7315941 use for codding the codes
-#=====================================================================================https://www.researchgate.net/publication/7315941 use for codding the codes
 BC2D$histyp4<- str_replace_all(BC2D$SNOMED_MORPHOLOGY,pattern = "[^M-][80]223", replacement = "IDC")# IDC Invasive ductal carcinoma
 BC2D$histyp4<- str_replace_all(BC2D$histyp4,pattern = "[^M-][81]413", replacement = "IDC")
 BC2D$histyp4<- str_replace_all(BC2D$histyp4,pattern = "[^M-][82]013", replacement = "IDC")
