@@ -51,6 +51,7 @@ BC1B$text <- sapply(1:length(text), function(x) stringr::str_replace_all(text[x]
 rm(list=ls())
 BC0 <- read.csv("BC_merged_NCR_imp_V2.csv")
 
+#partition data into two, one with the text report and the snomed code and the other without these variables, for easy assesment of columns. The will be merged later
 BC10<-BC0[ ,-c(17,20,21)]
 
 BC1 <- BC0[ , c(17,20,21)]
@@ -70,7 +71,7 @@ BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{
 BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}8$", replacement = "met2")
 BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}9$", replacement = "met3")
 table(BC1$SNOMED_MORPHOLOGY)
-#==============================================================================================================
+#====================Continue pre-processing
 
 BC1$Text[[5]]#examine text in column 5
 
@@ -87,11 +88,11 @@ BC1$Text[[5001]]
 #grepl("CLINICAL INFORMATION", BC1$Text)
 #Malig$Text=gsub("SCORE","",Malig$Text
 #BC1$Text=gsub("(\\*|\\(|\\)|\\:|\\s+)","",BC1$Text)
-#=============================================================Data Retrieval =
+#=============================================================Data Retrieval
 
-#=================================================================HERNEU
-#HER2NEU
-BC1$Her2 <- stringr::str_extract(BC1$Text, "HERNEU.?(\\s*[^\\s*]*){17}")
+#=HERNEU
+
+BC1$Her2 <- stringr::str_extract(BC1$Text, "HERNEU.?(\\s*[^\\s*]*){17}")#summarise text, targeting the term "HERNUE
 BC1$Her21 <- stringr::str_extract(BC1$Her2, "\\HERNEU.?\\s*\\WEAK|\\bEQUIVOCAL|\\bPOSITIVE|\\bPOSITVE|\\bSTRONG|\\bNEGATIVE|\\bPOSITIVITY|\\bNONCONTRIBUTORY|\\CAN NOT BE INTERPRETED")
 BC1$Her22 <- stringr::str_extract(BC1$Her2, "\\HERNEU.?\\s*(\\d|\\SCORE \\d|\\w*\\s*\\d|\\w*\\s*\\w*\\s*\\w*\\s*\\d)")
 
