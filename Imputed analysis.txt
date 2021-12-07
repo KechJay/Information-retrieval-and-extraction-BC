@@ -222,11 +222,15 @@ exp(cbind(OR = coef(histype)))
 z6 <- summary(histype)$coefficients/summary(histype)$standard.errors
 p6 <- (1 - pnorm(abs(z6), 0, 1))*2
 
-==============================================================Race VS Molecular subtype=================================
-#=======================================================Molecular trend and year
+================================================================Data visualisation
+Race VS Molecular subtype
+#===Molecular trend and year
+#load packages
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
+
+#creat a cross tab tab
 fre_molp <- imputed %>%
   count(year2, Mol_subtype2) %>%
   group_by(year2) %>%
@@ -262,7 +266,7 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g3+ My_Theme
-#=======================================================Data visualisation
+#======================================================
 #=====Incidence cases age vs molecular subtypes
 #create data for age and mol. subtype
 
