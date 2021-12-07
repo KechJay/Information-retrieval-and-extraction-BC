@@ -51,14 +51,13 @@ BC1B$text <- sapply(1:length(text), function(x) stringr::str_replace_all(text[x]
 rm(list=ls())
 BC0 <- read.csv("BC_merged_NCR_imp_V2.csv")
 
-#partition data into two, one with the text report and the snomed code and the other without these variables, for easy assesment of columns. The will be merged later
+#partition data into two, one with the text report and the snomed code and the other without these variables,
+#for easy assesment of columns. The will be merged later
 BC10<-BC0[ ,-c(17,20,21)]
 
 BC1 <- BC0[ , c(17,20,21)]
 
 #===Recode the snomed morphology code
-library(stringr)
-#===Recode the snomed MORPHOLOGY.1 code
 library(stringr)
 BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}0$", replacement = "benign")
 BC1$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC1$SNOMED_MORPHOLOGY.1,pattern = ".{6}1$", replacement = "undecisive")
@@ -88,28 +87,27 @@ BC1$Text[[5001]]
 #grepl("CLINICAL INFORMATION", BC1$Text)
 #Malig$Text=gsub("SCORE","",Malig$Text
 #BC1$Text=gsub("(\\*|\\(|\\)|\\:|\\s+)","",BC1$Text)
-#=============================================================Data Retrieval
+#=============================================================Data Retrieval and extraction
 
 #=HERNEU
+BC1$Her2 <- stringr::str_extract(BC1$Text, "HERNEU.?(\\s*[^\\s*]*){17}")#summarise text, targeting the term "HERNUE". I reduced down to 17 characters
+BC1$Her21 <- stringr::str_extract(BC1$Her2, "\\HERNEU.?\\s*\\WEAK|\\bEQUIVOCAL|\\bPOSITIVE|\\bPOSITVE|\\bSTRONG|\\bNEGATIVE|\\bPOSITIVITY|\\bNONCONTRIBUTORY|\\CAN NOT BE INTERPRETED")#Look into the above created column (Her2) and extract where any of the specified word is mentioned
+BC1$Her22 <- stringr::str_extract(BC1$Her2, "\\HERNEU.?\\s*(\\d|\\SCORE \\d|\\w*\\s*\\d|\\w*\\s*\\w*\\s*\\w*\\s*\\d)")#Look into Her2 column and extract where digit or the SCORE #followed by digit is mentioned
 
-BC1$Her2 <- stringr::str_extract(BC1$Text, "HERNEU.?(\\s*[^\\s*]*){17}")#summarise text, targeting the term "HERNUE
-BC1$Her21 <- stringr::str_extract(BC1$Her2, "\\HERNEU.?\\s*\\WEAK|\\bEQUIVOCAL|\\bPOSITIVE|\\bPOSITVE|\\bSTRONG|\\bNEGATIVE|\\bPOSITIVITY|\\bNONCONTRIBUTORY|\\CAN NOT BE INTERPRETED")
-BC1$Her22 <- stringr::str_extract(BC1$Her2, "\\HERNEU.?\\s*(\\d|\\SCORE \\d|\\w*\\s*\\d|\\w*\\s*\\w*\\s*\\w*\\s*\\d)")
-
+#assess number of rows with extraction or missing for each created column
 table(is.na(BC1$Her2))
 table(is.na(BC1$Her21))
 table(is.na(BC1$Her22))
 table(BC1$Her22)
 table(BC1$Her21)
 
-#combining HER2NEU
+#combine the created columns
 library(dplyr)
 BC1 <- BC1%>% 
   mutate(Her23 = ifelse(is.na(Her21), Her22, Her21))
 table(is.na(BC1$Her23))
 
 table(BC1$Her23)
-
 
 BC1$Her2_final <- ifelse(BC1$Her23=="HERNEU STAIN YIELDS A 2","EQUIVOCAL",
 ifelse(BC1$Her23=="HERNEU STAIN SCORES A 2","EQUIVOCAL",
