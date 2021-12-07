@@ -1,13 +1,24 @@
-#===============================================================================Univariate analysis
+#===============================Univariate analysis
+#multinomial or polytomous model
+#set working environment
+#import data
 getwd()
 setwd( "C:/Users/user-pc/Desktop/Kech2")
 BC2H <- read.csv("work_data2.csv")#import data
+
+
+
+table(BC2H$breast_side4,exclude =NULL)#assessing missing
 table(BC2H$year2)
+table(BC2H$Race4,exclude =NULL)
 table(BC2H$Age_cat,exclude =NULL)
-
-table(BC2H$breast_side4,exclude =NULL)
-
 table(BC2H$Histologic_grade,exclude =NULL)
+table(BC2H$histyp5,exclude =NULL)
+table(BC2H$Oestrogen_final,exclude =NULL)
+table(BC2H$Progesterone_final,exclude =NULL)
+table(BC2H$Her2_final,exclude =NULL)
+
+#recategorise histological gades
 BC2H$Histologic_grade2<- ifelse(BC2H$Histologic_grade=="GRADE I","I",
                                 ifelse( BC2H$Histologic_grade=="GRADE II", "II",
                                         ifelse(BC2H$Histologic_grade=="GRADE II ", "II",
@@ -16,16 +27,6 @@ BC2H$Histologic_grade2<- ifelse(BC2H$Histologic_grade=="GRADE I","I",
 
 
 table(BC2H$Histologic_grade2,exclude =NULL)
-table(BC2H$Race4,exclude =NULL)
-
-table(BC2H$histyp5,exclude =NULL)
-
-table(BC2H$Oestrogen_final,exclude =NULL)
-
-
-table(BC2H$Progesterone_final,exclude =NULL)
-
-table(BC2H$Her2_final,exclude =NULL)
 
 table(BC2H$Mol_subtype,exclude =NULL)
 BC2H$Mol_subtype2 <- ordered(BC2H$Mol_subtype, levels =c("Luminal A", "Luminal B", "HER2-OE", "TNBC"))
