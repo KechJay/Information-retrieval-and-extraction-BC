@@ -17,6 +17,9 @@ table(BC2H$histyp5,exclude =NULL)
 table(BC2H$Oestrogen_final,exclude =NULL)
 table(BC2H$Progesterone_final,exclude =NULL)
 table(BC2H$Her2_final,exclude =NULL)
+table(BC2H$KI67_final2,exclude =NULL)
+table(BC2H$Race4,exclude =NULL)
+table(BC2H$Mol_subtype,exclude =NULL)
 
 #recategorise histological gades
 BC2H$Histologic_grade2<- ifelse(BC2H$Histologic_grade=="GRADE I","I",
@@ -24,18 +27,15 @@ BC2H$Histologic_grade2<- ifelse(BC2H$Histologic_grade=="GRADE I","I",
                                         ifelse(BC2H$Histologic_grade=="GRADE II ", "II",
                                                ifelse(BC2H$Histologic_grade=="GRADE III", "III",NA))))
 
-
-
 table(BC2H$Histologic_grade2,exclude =NULL)
 
-table(BC2H$Mol_subtype,exclude =NULL)
+#relevel molecular subtypes
 BC2H$Mol_subtype2 <- ordered(BC2H$Mol_subtype, levels =c("Luminal A", "Luminal B", "HER2-OE", "TNBC"))
 levels(BC2H$Mol_subtype2)<- c("LuminalA", "LuminalB", "HER2OE", "TNBC")
 table(BC2H$Mol_subtype2,exclude =NULL)
-table(BC2H$KI67_final2,exclude =NULL)
-table(BC2H$Race4,exclude =NULL)
-#===============================================================================
-#=========================================================================Polytomous analysis===================================
+
+
+#================Polytomous analysis
 table(BC2H$Mol_subtype4)
 table(BC2H$Age_cat, exclude = NULL)
 
