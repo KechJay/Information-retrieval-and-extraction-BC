@@ -270,7 +270,7 @@ My_Theme = theme(
 g3+ My_Theme
 
 #=====Incidence cases age vs molecular subtypes
-#create data for age and mol. subtype
+#create cross tabulation for age and mol. subtype
 
 table(imputed$Age_cat)
 Age_molp <- imputed %>%
@@ -281,14 +281,14 @@ Age_molp <- imputed %>%
                      values_fill = list(n = 0))
 
 Age_molp <- as.data.frame(Age_molp)
-
+#creat data from the cross tab
 data2 <- cbind(Age_molp[1], stack(Age_molp[2:5]))
 data2$Age_cat <- as.factor(data2$Age_cat)
-
+#round digit
 data2$values <- round(data2$values, digits = 1)
 
 #data3 <- data2[complete.cases(data2$Age_cat),]
-
+#make a trend plot of age and molecular subtype
 g4 <- ggplot(data2, aes(x = Age_cat, y = values, fill = ind, label = values)) +
   geom_bar(stat = "identity") +
   labs(x = "Age category", y = "Proportion of cases (%)")+
@@ -300,8 +300,11 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g4+ My_Theme
-#===========Race molecular subtype
 
+
+
+#======================Race molecular subtype
+#creat cross tab of race and molecular subtype
 Age_molp <- imputed %>%
   count(Race4, Mol_subtype2) %>%
   group_by(Race4) %>%
@@ -311,13 +314,14 @@ Age_molp <- imputed %>%
 
 Age_molp <- as.data.frame(Age_molp)
 
+
 data2 <- cbind(Age_molp[1], stack(Age_molp[2:5]))
 data2$Race4 <- as.factor(data2$Race4)
-
+#round digit
 data2$values <- round(data2$values, digits = 1)
 
-#data3 <- data2[complete.cases(data2$Race4),]
 
+#make a trend plot of race and molecular subtype
 g4 <- ggplot(data2, aes(x = Race4, y = values, fill = ind, label = values)) +
   geom_bar(stat = "identity") +
   labs(x = "Race", y = "Proportion of cases (%)")+
@@ -329,14 +333,15 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g4+ My_Theme
-#===============================================================================Race, Age and Molecular
+#=====================================Race, Age and Molecular
 
 Asian <- imputed[which(imputed$Race4=="Asian"),]
 Black <- imputed[which(imputed$Race4=="Black"),]
 Colored <- imputed[which(imputed$Race4=="Colored"),]
 White <- imputed[which(imputed$Race4=="White"),]
 
-
+#create cross tab for age, race and mlecular subtype
+#description as in above 
 table(Asian$Age_cat,exclude = NULL)
 Age_molp <- White %>%
   count(Age_cat, Mol_subtype2) %>%
@@ -351,8 +356,6 @@ data2 <- cbind(Age_molp[1], stack(Age_molp[2:5]))
 data2$Age_cat <- as.factor(data2$Age_cat)
 
 data2$values <- round(data2$values, digits = 1)
-
-#data3 <- data2[complete.cases(data2$Age_cat),]
 
 g4 <- ggplot(data2, aes(x = Age_cat, y = values, fill = ind, label = values)) +
   geom_bar(stat = "identity",width = 0.7) +
