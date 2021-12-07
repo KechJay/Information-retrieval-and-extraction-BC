@@ -696,12 +696,12 @@ table(is.na(BC2E$histyp4))# assess missing and non missing
 # save ceated data for reference
 #write.csv(BC2D, file = "Malig_extract_2204.csv")
 #write.csv(BC2D, file = "Malig_extract_2204.csv")
-#=========================categorise histo type
+#==================categorise histo type to two categories
 BC2E$histyp5 <- ifelse(BC2E$histyp4=="IDC","IDC",
                              ifelse(BC2E$histyp4=="IDC_ST","IDC","OTHERS"
                              ))
 table(BC2E$histyp5)
-#=============================Manual AGE from NHLS
+#====================Manual AGE from NHLS
 
 BC2E$Age = substring(BC2E$AGE_DISPLAY,1,2)#select where age = 2 digits
 table(BC2E$Age,exclude = NULL)
@@ -714,50 +714,50 @@ summary(BC2E$Age)
 #BC2E <- BC2D[which(BC2D$Age>=18),] #Age greater than 18 years
 #Less18 <- BC2D[which(BC2D$Age<18),]
 ##Age
-#================================extracted age
+#====================extracted age from the report
+#extract where DOB is mentioned
+#extract where year, years, yearsold, yrs is mentioned
+#extract where Age is mentioned
 BC2E$Age2A <-stringr::str_extract(BC2E$Text,"\\bDOB\\s\\d+")
 BC2E$Age2B <-stringr::str_extract(BC2E$Text,"(\\d){1,3}\\s*(\\bYEARS|\\bYEAR|\\bYEAROLD|\\YRS)")
 BC2E$Age2C <-stringr::str_extract(BC2E$Text,"\\AGE\\s\\d+")
 table(BC2E$Age2A)
-
+#combine  columns
 BC2E <- BC2E%>% 
   mutate(Age2C = ifelse(is.na(Age2B), Age2A, Age2B))
 table(BC2E$Age2C)
 table(is.na(BC1$Age2C))
 table(BC2E$Age2C)
 
-
+#remove those terms to have only age values
 BC2E$Age2D <-str_remove_all(BC2E$Age2C, "\\bYEARS|\\bYEAR|\\bYEAROLD|YRS|\\bDOB") 
-BC2E$Age2D <- as.numeric(BC2E$Age2D)#
+BC2E$Age2D <- as.numeric(BC2E$Age2D)
 table(is.na(BC2E$Age2D))
 table(BC2E$Age2D)
-BC2E$Age2D <- as.factor(BC2E$Age2D)#
+#BC2E$Age2D <- as.factor(BC2E$Age2D)#
 
-
-
-BC2E$Age2D<- str_replace_all(BC2E$Age2D,pattern = "19760609", replacement = "43")# work on the patient age with date of birth
+# Extracted age still contian ages with typos, clean up the typos
+BC2E$Age2D<- str_replace_all(BC2E$Age2D,pattern = "19760609", replacement = "43")
 BC2E$Age2D<- str_replace_all(BC2E$Age2D,pattern = "590", replacement = "59")# 
 BC2E$Age2D<- str_replace_all(BC2E$Age2D,pattern = "564", replacement = "54")# 
 BC2E$Age2D<-as.numeric(BC2E$Age2D)
 summary(BC2E$Age2D)
-
+#remove DOB where necessary
 BC2E$Age2E <-str_remove_all(BC2E$Age2A, "\\bDOB") 
 table(BC2E$Age2E)
 
-
+#combining age columns
 BC2E$Age3 <- ifelse(BC2E$Age2D <=15, BC2E$Age2E, BC2E$Age2D)
 table(BC2E$Age3)
 
 BC2E$Age3<-as.numeric(BC2E$Age3)
 summary(BC2E$Age3)
-BC2E$Age3 <- ifelse(is.na(BC2E$Age3), BC2E$Age, BC2E$Age3)
 
-#BC2E$Age3 <- ifelse(is.na(BC2E$Age3), BC2E$Age, BC2E$Age3)
 #BC2E$Age3[BC2E$Age3 <14]<-NA
 
 summary(BC2E$Age3)
 
-
+#categorise age
 hist(BC2E$Age3, exclude =NULL)
 summary(BC2E$Age)
 BC2E$Age_cat <- ifelse(BC2E$Age3 <40,"<40",
@@ -766,17 +766,18 @@ BC2E$Age_cat <- ifelse(BC2E$Age3 <40,"<40",
                                      ifelse(BC2E$Age3>=60 & BC2E$Age3<=69,"60-69","70-104"))))
 
 table(BC2E$Age_cat, exclude =NULL)
-#================================================= Manual Year
+#===================== Manual Year
 
 BC2E$year2 <-as.Date(BC2E$REVIEW_DATE,format = "%Y/%m/%d")
 format(BC2E$year2)
 BC2E$year2 = substring(BC2E$year2,1,4) #this has to do with the year
 table(BC2E$year2)
-#==========================================BREAST SIDE====================================================================================================
+#=======================Laterality
 BC2E$breast_side <-  stringr::str_extract(BC2E$Text, "(LEFTBREAST|RIGHTBREAST|LRBREAST|LEFT,B|RIGHT,B )")
 table(is.na(BC2E$breast_side))
 BC2E$breast_side2 <-  stringr::str_extract(BC2E$Text, "(LEFT|RIGHT)")
 
+#Combine laterality columns
 BC2E <- BC2E%>% 
   mutate(breast_side3 = ifelse(is.na(breast_side), breast_side2, breast_side))
 table(is.na(BC2E$breast_side3))
@@ -792,37 +793,32 @@ BC2E$breast_side4 <- ifelse(BC2E$breast_side3 =="LEFTBREAST","LEFTBREAST",
                                                        NA)))))
 
 table(BC2E$breast_side4)
-#==========================================================================================================================13
+#===================histologica type initial categories
 BC2E$histyp <- stringr::str_extract(BC2E$Text,"([^\\s+]+\\s+){0}\\b(DCIS|LCIS|IDC|ILC|MEDLCA|INFBCA|TUBLBC|MUCAR|NST|IBCNST|METDC|METIC).?")
 table(is.na(BC2E$histyp))
 
-
-
-
-#=====5
-#==============================================================YEAR=====================================We use a more complete case 
+#=============YEAR
 #BC1$YEAR <-stringr::str_extract(BC1$Text,"\\d\\d[\\/]\\d\\d[\\/]\\d\\d\\d\\d")  
 #table(is.na(BC1$YEAR))
 table(BC1$YEAR)
-#======================================================================================================remove variables not needed
+#================remove variables not needed
 BC2F <-BC2E[-c(20:47,49:60,62,65:69,73:75,77)]
 
-#======================================================================================================Drop non primary malignat cancer
+#=============Drop non primary malignat cancer
 table(BC2F$SNOMED_MORPHOLOGY.1)
 BC2G <- BC2F[which(BC2F$SNOMED_MORPHOLOGY.1=="malignant"), ]
 
 table(BC2G$SNOMED_MORPHOLOGY.1)
 table(BC2H$SNOMED_MORPHOLOGY)
-#======================================================================================================Remove duplicate
+#=============Remove duplicate
 BC2H <- BC2G[!duplicated(BC2G$EPISODE_NO), ] #HERE
 Duplicate <- BC2G[duplicated(BC2G$EPISODE_NO), ] #HERE
 
 
 
 table(BC2H$Age_cat,exclude = NULL)
-#=======================================================================Race
-
-
+#===============Race
+#recategorise Race to meet with the race in NCR
 table(BC2H$RACE)
 
 RACE <- BC2H[which(BC2H$RACE=="S"), ]
@@ -842,7 +838,7 @@ BC2H$Race3 <- ifelse(BC2H$RACE == "A","Black",
 
 table(BC2H$Race3)
 
-
+#combine the two race columns
 BC2H <- BC2H%>% 
   mutate(Race4 = ifelse(is.na(Race3), Race2, Race3))
 table(is.na(BC2H$Race4))
