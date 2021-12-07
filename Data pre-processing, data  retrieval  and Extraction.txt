@@ -148,7 +148,7 @@ ifelse(BC1$Her23=="STRONG","POSITIVE",NA
 table(BC1$Her2_final)
 table(is.na(BC1$Her2_final))      
 
-#=================================================================================Progesterone.   https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4413070/
+#=Progesterone.#Descriptions as in the HER2NUE extraction above.  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4413070/#was also used for to construct dictionary
 BC1$Progesterone <- stringr::str_extract(BC1$Text, "\\bPROGESTERONE.?(\\s*[^\\s*]*){17}")#
 BC1$Progesterone1 <- stringr::str_extract(BC1$Progesterone, "\\bPROGESTERONE.?\\s*\\WEAK|\\bPOSITIVE|\\bPOSITVE|\\bSTRONG|\\bNEGATIVE|\\bPOSITIVITY")
 BC1$Progesterone2 <- stringr::str_extract(BC1$Progesterone, "\\bPROGESTERONE.?\\s*(\\d|\\SCORE \\d|\\w*\\s*\\d|\\w*\\s*\\w*\\s*\\w*\\s*\\d)")
@@ -208,7 +208,7 @@ ifelse(BC1$Progesterone3=="STRONG","POSITIVE", NA
 
 table(is.na(BC1$Progesterone_final))
 table(BC1$Progesterone_final)
-#=======================================OESTROGEN=========================================================https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4413070/
+#=OESTROGEN .#Descriptions as in the HER2NUE extraction above. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4413070/.Was also used to construct dictionary
 BC1$Oestrogen <- stringr::str_extract(BC1$Text, "\\bOESTROGEN.?(\\s*[^\\s*]*){17}")#
 BC1$Oestrogen1 <- stringr::str_extract(BC1$Oestrogen, "\\bOESTROGEN.?\\s*\\WEAK|\\bPOSITIVE|\\bPOSITVE|\\bSTRONG|\\bNEGATIVE|\\bPOSITIVITY")
 BC1$Oestrogen2 <- stringr::str_extract(BC1$Oestrogen, "\\bOESTROGEN.?\\s*(\\d|\\SCORE \\d|\\w*\\s*\\d|\\w*\\s*\\w*\\s*\\w*\\s*\\d)")
@@ -300,18 +300,19 @@ BC1 <- BC1%>%
 table(is.na(BC1$Oestrogen_final))
 table(BC1$Oestrogen_final)
 table(is.na(BC1$Oestrogen_final))
-#===========================================================================================MOLECULAR SUBTYPE
-#====================================================Molecular subtype #Paper used for classification    https://www.researchgate.net/publication/259250187,https://doi.org/10.3389/fonc.2011.00012
+#==============================================Defining molecular subtype from the combination of the above three parameters
+#=The below link was used to guide classification of molecular subtypes  
+#https://www.researchgate.net/publication/259250187
+#https://doi.org/10.3389/fonc.2011.00012
 #https://doi.org/10.1148/radiol.2018171118
-library(dplyr)
 
+library(dplyr)3use for this task
+
+#re-assess categories and missing 
 table(BC1$Her2_final,exclude = NULL)
 table(BC1$Progesterone_final,exclude = NULL)
 table(BC1$Oestrogen_final,exclude = NULL)
-
-
-
-
+#creating molcular subtypes based on the definition, and with replace missing where the three combinations are not available
 BC1$Mol_subtype <- 
 ifelse(BC1$Oestrogen_final=="POSITIVE"& BC1$Progesterone_final=="POSITIVE"& BC1$Her2_final=="NEGATIVE","Luminal A",
 ifelse(BC1$Oestrogen_final=="POSITIVE"& BC1$Progesterone_final=="NEGATIVE"& BC1$Her2_final=="NEGATIVE","Luminal A",
