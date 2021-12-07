@@ -680,7 +680,7 @@ BC2D$histyp4<- str_replace_all(BC2D$ histyp4,pattern = "[^M-][83]433", replaceme
 
 table(BC2D$histyp4)
 
-#Drop cases that are noncarcinoma ie FRibroytic
+#Drop cases that are noncarcinoma ie Fribroytic
 
 BC2E <- BC2D[!grepl("M-[01345679]\\d{4}",BC2D$histyp4),]#delete non carcinoma cases
 
@@ -688,34 +688,33 @@ BC2E <- BC2D[!grepl("M-[01345679]\\d{4}",BC2D$histyp4),]#delete non carcinoma ca
 
 BC2E$histyp4 <- str_replace_all(BC2E$histyp4,pattern ="([^M-]\\d{4,5}|[^M-][8F]\\d{2,3})",replacement = "OTHERS")#group those cases with observed freq lower than 10 or equal to 10
 
-BC2E$histyp4  <- str_remove_all(BC2E$histyp4,".[^\\w{2,8}]")
+BC2E$histyp4  <- str_remove_all(BC2E$histyp4,".[^\\w{3,8}]")# remove the first characters not needed for further categories
 
 table(BC2E$histyp4)
-table(is.na(BC2E$histyp4))
+table(is.na(BC2E$histyp4))# assess missing and non missing
 
-#write.csv(BC2D2, file = "Malig_extract_2204.csv")
-#write.csv(BC2D2, file = "Malig_extract_2204.csv")
+# save ceated data for reference
+#write.csv(BC2D, file = "Malig_extract_2204.csv")
+#write.csv(BC2D, file = "Malig_extract_2204.csv")
 #=========================categorise histo type
 BC2E$histyp5 <- ifelse(BC2E$histyp4=="IDC","IDC",
                              ifelse(BC2E$histyp4=="IDC_ST","IDC","OTHERS"
                              ))
 table(BC2E$histyp5)
-#==================================================================================Manual AGE
+#=============================Manual AGE from NHLS
 
 BC2E$Age = substring(BC2E$AGE_DISPLAY,1,2)#select where age = 2 digits
 table(BC2E$Age,exclude = NULL)
 
 #BC2E$Age <- BC2E[which(BC2E$Age!="Un"),]#remove where age is unknown
 
-BC2E$Age <- as.numeric(BC2E$Age)#
+BC2E$Age <- as.numeric(BC2E$Age)#Convert to numeric
 summary(BC2E$Age)
 
-
-
-#BC2E <- BC2D[which(BC2D$Age>=18),]  
+#BC2E <- BC2D[which(BC2D$Age>=18),] #Age greater than 18 years
 #Less18 <- BC2D[which(BC2D$Age<18),]
 ##Age
-#==================================================================================extracted age
+#================================extracted age
 BC2E$Age2A <-stringr::str_extract(BC2E$Text,"\\bDOB\\s\\d+")
 BC2E$Age2B <-stringr::str_extract(BC2E$Text,"(\\d){1,3}\\s*(\\bYEARS|\\bYEAR|\\bYEAROLD|\\YRS)")
 BC2E$Age2C <-stringr::str_extract(BC2E$Text,"\\AGE\\s\\d+")
