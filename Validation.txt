@@ -61,61 +61,7 @@ P_c
 
 Kappa<- (P_o - P_c)/(1-P_c)#compute kappa
 Kappa
-#=================confidence intereval
-#*p^+z2/(2n)/1+z2/n+-z.sqrtp^(1-p^)/n+4#Wilson  app. fomular to control for estimate with value of 1
 
-#*PRECISION POSITIVE
-#compute for each category of the individual parameter
-Z=1.96#define Z
-n=ER3[4]+ER3[2]#define n
-LE <- (precision_ER[2]+((Z^2)/(2*n)))/((1+(Z^2)/n))
-RE <-Z*sqrt(precision_ER[2]*(1-precision_ER[2])/(n+4))
-#*
-#*
-LCI <- LE-RE
-UCI = LE+RE
-
-#*PRECISION NEGATIVE
-#description as in above
-n1=ER3[1]+ER3[3]
-LE1 <- (precision_ER[1]+((Z^2)/(2*n1)))/((1+(Z^2)/n1))
-RE1 <-Z*sqrt(precision_ER[1]*(1-precision_ER[1])/(n1+4))
-#*
-LCI1 <- LE1-RE1
-UCI1 = LE1+RE1
-
-#*=========RECALL
-#as in the above
-#*RECALL POSITIVE
-n2 =ER3[4]+ER3[3]
-LE2 <- (recall_ER[2]+((Z^2)/(2*n2)))/((1+(Z^2)/n2))
-RE2 <-Z*sqrt(recall_ER[2]*(1-recall_ER[2])/(n2+4))
-LCI2 <- LE2-RE2
-UCI2 = LE2+RE2
- 
-#*Recall negative
-n3=ER3[1]+ER3[2]
-
-LE3 <- (recall_ER[1]+((Z^2)/(2*n3)))/((1+(Z^2)/n3))
-RE3 <-Z*sqrt(recall_ER[1]*(1-recall_ER[1])/(n3+4))
-LCI3 <- LE3-RE3
-UCI3 = LE3+RE3
-
-#============Fscore
-#as in the above
-#*POSITIVE
-n4 = ER3[4]+ER3[3]+ER3[2]
-LE4 <- (Fscore[2]+((Z^2)/(2*n4)))/((1+(Z^2)/n4))
-RE4 <-Z*sqrt(Fscore[2]*(1-Fscore[2])/(n4+4))
-LCI4 <- LE4-RE4
-UCI4 = LE4+RE4
-
-#*NEGATIVE
-n5 = ER3[1]+ER3[2]+ER3[3]
-LE5 <- (Fscore[1]+((Z^2)/(2*n5)))/((1+(Z^2)/n5))
-RE5 <-Z*sqrt(Fscore[1]*(1-Fscore[1])/(n5+4))
-LCI5 <- LE5-RE5
-UCI5 = LE5+RE5
 
 
 #=========================Progesterone
@@ -144,10 +90,16 @@ agree( PR2, tolerance=0)
 
 kappa2( PR2)
 
-agree1_tab2 <-table(PR2$Progesterone_final, PR2$PR)#Manual computation
+#Manual computation
+
+agree1_tab2 <-table(PR2$Progesterone_final, PR2$PR)
 agree1_tab_p3 <- prop.table(agree1_tab2)
 P_o    <- sum(diag(agree1_tab_p3))  #Summing the diagonal
 P_o
+
+
+
+
 #=====================================HER2
 #All description for ER also applies PR
 HER <- common2[,c(17,48)]
@@ -177,6 +129,7 @@ agree1_tab_p3 <- prop.table(agree1_tab3)
 P_o    <- sum(diag(agree1_tab_p3))  #Summing the diagonal
 P_o
 #================================GRADE 
+#All descriptions explained as in ER
 GRADE <- common2[,c(22,44)]
 
 GRADE$GRADE0 <-str_remove_all(GRADE$Histologic_grade, "\\bGRADE") 
@@ -246,7 +199,8 @@ agree1_tab5 <-table(KI672$KI67_final2, KI672$KI672)#Manual computation
 agree1_tab_p5 <- prop.table(agree1_tab5)
 P_5    <- sum(diag(agree1_tab_p5))  #Summing the diagonal
 P_5
-#@==============================================================================LATERALITY
+#=================================LATERALITY
+#As explained in ER
 BREASTS <- common2[,c(28,43)]
 
 table(BREASTS$breast_side4.x)
@@ -287,13 +241,9 @@ table(HISTYP$Histo_grade)
 table(HISTYP$histyp5)
 HISTYP <- HISTYP[which(HISTYP$Histo_grade=="IDC"|HISTYP$Histo_grade=="OTHERS"), ]
 
-
-
 HISTYP2 <- na.omit(HISTYP)
 
-
 table(HISTYP$histyp5,HISTYP$Histo_grade,exclude = NULL)
-
 
 table(HISTYP$histyp5,HISTYP$Histo_grade,exclude = NULL)
 HISTYP<- table(HISTYP$histyp5,HISTYP$Histo_grade)
@@ -319,8 +269,8 @@ agree1_tab_p7 <- prop.table(agree1_tab6)
 P_7    <- sum(diag(agree1_tab_p7))  #Summing the diagonal
 P_7
 
-#==============================================================================
-#==============================================================================Histotype from the manual coders
+#=============Histotype from the manual coders
+#WS done to compare histology extraction from NHLS and machine
 MM_agree_final
 agree <-read.csv("MM_agree_final.csv", sep=",")
 str(agree)
@@ -340,7 +290,6 @@ agree2$value <-as.factor(agree2$value)
 g2<-ggplot(agree2,aes(x=value,variable, fill=variable))+
   geom_bar(position="fill")
 
-
 My_Theme = theme(
   axis.title.x = element_text(size = 16),
   axis.text.x = element_text(size = 14),
@@ -349,14 +298,12 @@ My_Theme = theme(
 g2+ My_Theme
 
 
-#==================================================Manual computation
+#=========================Manual computation histology extraction from NHLS and machine
 #install.packages("irr")
 library(irr)
 agree1 <- c("Manual", "Machine")
 agree1_tab <- table(agree[, agree1])
 agree1_tab
-
-
 agree1_tab_p <- prop.table(agree1_tab)
 P_o    <- sum(diag(agree1_tab_p))  #Summing the diagonal
 P_o
@@ -368,7 +315,6 @@ P_c
 
 Kappa<- (P_o - P_c)/(1-P_c)
 Kappa
-
 
 # HISTYP 3 <- data.frame( HISTYP 3)
 agree_tab <- table(agree$Manual,agree$Machine,exclude = NULL)
@@ -385,21 +331,20 @@ Fscore <- 2*(Precision_HISTYP *recall_HISTYP )/(Precision_HISTYP +recall_HISTYP 
 data(danishlc, package="GLMsData")
 
 
-#===============================================================================Age
-#===================================================ICC
-library(irr)
-ICC_data2 <- common2[,c(25,42)]
+#==============Age
+#=====ICC
+library(irr)#load package
+ICC_data2 <- common2[,c(25,42)]#creat a data with age from manual and machine extraction
 ICC_data2$Age3 <- as.numeric(ICC_data2$Age3)
 summary(ICC_data2$AGE1)
 summary(ICC_data2$Age3)
-ICC_data2 <- ICC_data2[complete.cases(ICC_data2),]
+ICC_data2 <- ICC_data2[complete.cases(ICC_data2),]#use onle complete case
 mean(ICC_data2$AGE1)
-plot(ICC_data2$Age3,ICC_data2$Age)
+plot(ICC_data2$Age3,ICC_data2$Age)#make a plot
 abline(0,1, col="red",lwd=2)
-cor.test(ICC_data2$Age3,ICC_data2$Age)
+cor.test(ICC_data2$Age3,ICC_data2$Age)#correlation test
 
-
+#compute ICC for aggreement and consistency
 annot    <- c("AGE1", "Age3")
-
 icc(ICC_data2[,annot], model="twoway", type="agreement", unit="average")
 icc(ICC_data2[,annot], model="twoway", type="consistency", unit="average")
