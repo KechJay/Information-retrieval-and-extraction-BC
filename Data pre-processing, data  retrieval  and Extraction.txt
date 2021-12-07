@@ -518,20 +518,20 @@ BC2D$BLOOM <-stringr::str_extract(BC2D$Text, "([^\\s*]+\\s*){2}\\b(BLOOMRICHARDS
 BC2D$BLOOM2 <-stringr::str_extract(BC2D$BLOOM,"\\bBLOOMRICHARDSON.?\\s*(\\d|\\bGRADE \\d)")
 BC2D$BLOOM3 <-stringr::str_extract(BC2D$BLOOM,"\\bSCORE.?\\s*\\d")
 
-#combining BLOOM
+#combining BLOOM columns
 library(dplyr)
 BC2D <- BC2D%>% 
   mutate(BLOOM_comb = ifelse(is.na(BLOOM2), BLOOM3, BLOOM2))
 table(is.na(BC2D$BLOOM_comb))
 table(BC2D$BLOOM_comb)
-#=====10
+#=====extract where the grade categorical values are reported
 BC2D$Histo_grade <-stringr::str_extract(BC2D$Text, "(WELLD|POORD|MODRD|MODPOORD)")
 table(is.na(BC2D$Histo_grade))
-#====11
+#====extract where the values are mentioned in Roman numerals or digits are used
 BC2D$grade2a <-stringr::str_extract(BC2D$Text, "(\\bGRADE\\s+(I|II|III|IV|1|2|3|4)\\s+)")
 BC2D$grade2b <-stringr::str_extract(BC2D$Text, "(\\bGRADE\\s*(I|II|III|IV|1|2|3|4)s*)")
 
-#combining grade 1 and 2
+#combining the above columns
 library(dplyr)
 BC2D <- BC2D%>% 
   mutate(grade2 = ifelse(is.na(grade2a), grade2b, grade2a))
