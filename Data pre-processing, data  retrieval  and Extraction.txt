@@ -507,7 +507,11 @@ BC2D$KI67_final2 <- ifelse(BC2D$KI67_final== "HIGH",">=14",
 table(BC2D$KI67_final2, exclude = TRUE)
 
 
-#=======================================================BLOOMRICHARDSON#================================================================================
+#=======================================Grades
+#Different grades reporting were used in the report. 
+#summarise targeting the word Bloomreichardson, total score
+#extract where grade followed by digit is used
+#otherwise extract where digit is used
 BC2D$BLOOM <-stringr::str_extract(BC2D$Text, "([^\\s*]+\\s*){2}\\b(BLOOMRICHARDSON|TOTAL SCORE).?(\\s+[^\\s+]+){10}")
 #BC2D$BLOOM2 <-stringr::str_extract(BC2D$BLOOM,"(\\b(BLOOMRICHARDSON|TOTAL SCORE).?\\s*(\\w{1,30}|\\d.*)\\s(\\w|\\d.*))")
 
