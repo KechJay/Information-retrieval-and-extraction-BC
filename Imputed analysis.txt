@@ -1,5 +1,5 @@
 table(Malig_pap6$Race)
-#=====================================Missing pattren assessment and imputation
+#========================Missing pattern assessment and imputation
 #load packages
 Sys.which("make")
 install.packages("VIM")
