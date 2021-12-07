@@ -230,7 +230,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyverse)
 
-#creat a cross tab tab
+#creat a cross tab table with race and molecular from the imputed data
 fre_molp <- imputed %>%
   count(year2, Mol_subtype2) %>%
   group_by(year2) %>%
@@ -240,10 +240,12 @@ fre_molp <- imputed %>%
 
 fre_molp <- as.data.frame(fre_molp)
 
+#format the table to a dataframe
 data <- cbind(fre_molp[1], stack(fre_molp[2:5]))
 data$year2 <- as.factor(data$year2)
 
-data$values <- round(data$values, digits = 1)
+data$values <- round(data$values, digits = 1)#round digit to one decimal place
+#make a trend plot of molecular subtype across each year (point)
 g2 <- ggplot(data, aes(year2, values,group=ind,color =ind)) +
   geom_point(size=2) +
   geom_line(aes( group = ind,color =ind), size = 1) +
@@ -254,7 +256,7 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g2+ My_Theme
-#=============================================================Incidence cases year and mol_sub
+#===============make a barplot of year and molecular subtypes
 g3 <- ggplot(data, aes(x = year2, y = values, fill = ind, label = values)) +
   geom_bar(stat = "identity") +
   labs(x = "Year of diagnosis", y = "Proportion of cases (%)")+
@@ -266,7 +268,7 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g3+ My_Theme
-#======================================================
+
 #=====Incidence cases age vs molecular subtypes
 #create data for age and mol. subtype
 
