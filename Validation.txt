@@ -1,39 +1,30 @@
-#============================================================Validation data set
-#===================================resampling
+#====================================Validation data set
+#=resampling
 set.seed(3456)
 Valid_data <- BC2H[sample(nrow(BC2H), 300), ]#Note that this was sample from the first completed data which was 7645, now we have 9882
 
-write.csv(dup2,  file=
-            "dup2.csv")
 #write.csv(Valid_data,  file=
 #            "Valid_dataB.csv")
 
-Not_stand <- read.csv("BC_merged_NCR_imp_V2_not_standardised.csv")
+Not_stand <- read.csv("BC_merged_NCR_imp_V2_not_standardised.csv")#import orignal dataset, with text report not standardised
 
 
-Valid_data2 <- merge(Valid_data,Not_stand, by.x = "EPISODE_NO", by.y = "EPISODE_NO")
+Valid_data2 <- merge(Valid_data,Not_stand, by.x = "EPISODE_NO", by.y = "EPISODE_NO")#merge by episode number
 
+#export dataset and use for mnaual extraction
 write.csv(Valid_data2,  file="Valid_data2.csv")
+#call dataset valid extracted after extraction
 
-#Ext_epi <- read.csv("Ext_episode.csv")#epiode from old samples were brought forward to merge with the new samples
-#common2 <- intersect(Ext_epi$EPISODE_NO, BC2H$EPISODE_NO) #extract a common sample
-#common2 <-data.frame(common2)
-
-
-write.csv(BC2H, file="Work_data2.csv")#export data that are 
-
-#=============================================================================merge work data and manual data
+#=====================================merge work data and manual extracted data
+#import main data and manual extracted data
 work_data <- read.csv("Work_data2.csv")
 valid_extracted <- read.csv("validation_extracted.csv")
 
 
 common2 <- merge(work_data,valid_extracted, by.x = "EPISODE_NO", by.y = "EPISODE_NO")
-#write.csv(common2, file="common2.csv")#export data that are 
-#Valid_data <-data.frame(common2)
 
-#BC2H <- work_data
+#write.csv(common2, file="common2.csv")#export data for reference
 
-#===============================================================================
 #===============================ER
 table(common2$ER)
 
