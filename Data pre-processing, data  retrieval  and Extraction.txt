@@ -326,15 +326,14 @@ ifelse(BC1$Oestrogen_final=="NEGATIVE"& BC1$Progesterone_final=="NEGATIVE"& BC1$
 ifelse(BC1$Oestrogen_final=="NEGATIVE"& BC1$Progesterone_final=="NEGATIVE"& BC1$Her2_final=="POSITIVE","HER2-OE",NA
        ))))))))
 
-
+#assess categories and missing
 table(BC1$Mol_subtype,exclude = NULL)
 table(is.na(BC1$Mol_subtype))
 
-
+#******************************Did not used in this study, can only be used if interest is to extract molecular subtypes
+#*direct from the text, when the hormone receptors or any of them are are not mentioned in the text
 #BC1$LUMINAL <-stringr::str_extract(BC1$Text, "\\bLUMINAL.?(\\s*[^\\s*]*){1,3}")
 #table(is.na(BC1$LUMINAL))
-
-
 #BC1$LUMINAL2 <-stringr::str_extract(BC1$Text, "(\\bLUMINAL\\s*(A|B))")
 #table(BC1$LUMINAL2)
 
@@ -378,8 +377,10 @@ table(is.na(BC1$Mol_subtype))
 #BC1 <- BC1%>% 
  # mutate(Mol_subtype4 = ifelse(is.na(Mol_subtype3), TNBC2, Mol_subtype3))
 #table(BC1$Mol_subtype4)
+#********************************************************************************
 
-#==================================================================================Extract where there is only molecular subtypes
+
+#====Combine the datasets partioned above, with the current and subset for variables needed for further analysis   
 BC2 <-cbind(BC10,BC1)
 table(BC2$SNOMED_MORPHOLOGY.1, exclude = NULL)
 
@@ -389,28 +390,28 @@ BC2A <-BC2[-c(6,11,12,13,16,18,22:25,27:30,32:37)]
 #BC2A$SNOMED_MORPHOLOGY.1 <- str_replace_all(BC2A$SNOMED_MORPHOLOGY.1,pattern = "[M-](\\d*\\w*)", replacement = "OTHERS")#INOS
 #table(BC2A$SNOMED_MORPHOLOGY.1, exclude = NULL)
 
-#=======================================check for unknown codes
+#=======================================check for text report that contain the word UNKNOWN
 #str(BC2b$RESULT_TEXT)
 BC2B <- BC2A[which(BC2A$Text!="UNKNOWN"),]
 
 unknown <- BC2A[which(BC2A$Text=="UNKNOWN"),]
 
 table(BC1$SNOMED_MORPHOLOGY.1)
-#===================================Complete molecular subtype
-
+#===================================extract rows with molecular subtype values
 BC2C <- BC2B[complete.cases(BC2B[,19]),]
-#====================================MALE
+#====================================Drop rows for non-female cases
 table(BC2B$GENDER)
 BC2D<- BC2C[which(BC2C$GENDER!="M"),]
 MALE <- BC2C[which(BC2C$GENDER=="M"),]
 table(BC2C$SNOMED_MORPHOLOGY.1) 
-#====================================KI67#====================================================================KI67
-#we extracted the ki67 in the first column, commanding with the regular expression to look for KI67 with any charcters follows
-#succeeded by no word or word (\\W|\\w), followed by space or < or >, then succeeded by a one or more digit (\\d+) and the match it 
+#====================================KI67
+#summarise text targeting ki67 term with any charcter
+#succeeded by no word or word (\\W|\\w), followed by space or < or >, then succeeded by a one or more digits (\\d+) and then match it 
 #0 to 1x, succeeded by a %.
-#In the second line, we extracted from the ki67 column to have only the digit and %, with zero or more space before the % with the code
-#\\s*
-#========1
+#further reduce text summary to 17 characters
+#From the column above, extract the digit and %, with zero or more space before the % 
+#Extract where values are mentioned in words instead of digits
+
 BC2D$ki67  <- stringr::str_extract(BC2D$Text,"KI67(\\W|\\w)+[\\s|~|<|>\\d+](\\d+){0,1}(\\d*|%)")#cutting a wor
 BC2D$ki672 <- stringr::str_extract(BC2D$ki67 , "KI67(\\s+[^\\s+]+){1,17}")
 BC2D$ki673 <- stringr::str_extract(BC2D$ki672,"[\\s*|~|<|>|/](\\d){1,4}(\\s*%|\\d)")
@@ -488,7 +489,7 @@ table(BC2D$ki67_25)
 BC2D$ki67_26 <- str_replace_all(BC2D$ki67_25, "\\b(LOW)\\d{1}",  "LOW")#merge all one/2 digit numbers,commenting out any preceding word
 table(BC2D$ki67_26)
 
-#===========================================================
+#==================Combining values from the categories
 BC2D$KI67_final <- ifelse(BC2D$ki67_26 ==" HIGH","HIGH",
                           ifelse(BC2D$ki67_26 =="HIGH","HIGH"  ,
                                  ifelse(BC2D$ki67_26== " LOW","LOW",
@@ -505,7 +506,7 @@ BC2D$KI67_final2 <- ifelse(BC2D$KI67_final== "HIGH",">=14",
 
 table(BC2D$KI67_final2, exclude = TRUE)
 
-#KI67 <- BC2H[complete.cases(BC2H[,c(20)]),]
+
 #=======================================================BLOOMRICHARDSON#================================================================================
 BC2D$BLOOM <-stringr::str_extract(BC2D$Text, "([^\\s*]+\\s*){2}\\b(BLOOMRICHARDSON|TOTAL SCORE).?(\\s+[^\\s+]+){10}")
 #BC2D$BLOOM2 <-stringr::str_extract(BC2D$BLOOM,"(\\b(BLOOMRICHARDSON|TOTAL SCORE).?\\s*(\\w{1,30}|\\d.*)\\s(\\w|\\d.*))")
