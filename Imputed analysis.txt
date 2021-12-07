@@ -71,38 +71,33 @@ is.na(imputed)
 names(imputed)
 str(imputed)
 
-#save data abd imputed data for reference
+#save data and imputed data for reference
 #write.csv(data, file="data.csv")
 #write.csv(imputed, file ="imputed.csv") 
 
-
-
-
-
-#====================================================================================
-table(imputed$Race)
-
-#write.csv(imputed, file="ïmputed.csv")
-
+#import imputed
 read.csv("ïmputed.csv")
 
 
 #imputed2 <-imputed[,c(2,4,5,6,10,11,13,14,15)]
-#=======================================================Descriptive analysis========================================
+#==============Descriptive analysis
 
-#=========================================================================Polytomous analysis
-#=========================================================================Polytomous analysis===================================
+#===============================Polytomous analysis
+#reodered the response variable molecular subtype
 table(imputed$Mol_subtype,exclude =NULL)
 imputed$Mol_subtype2 <- ordered(imputed$Mol_subtype, levels =c("Luminal A", "Luminal B", "HER2-OE", "TNBC"))
 levels(imputed$Mol_subtype2)<- c("LuminalA", "LuminalB", "HER2OE", "TNBC")
 table(imputed$Mol_subtype2, exclude = NULL)
-
 imputed$Mol_subtype <-as.factor(imputed$Mol_subtype)
-
-
+#=======Age 
+# cross tabulation
 table(imputed$Age_cat,imputed$Mol_subtype2,exclude = NULL)
 table(imputed$Mol_subtype2)
-require(nnet)
+
+require(nnet)#load library
+# conduct analysis
+#extract odd ratio and confidence intervals
+#extract p-values
 
 Age_1 <- multinom(Mol_subtype2 ~ Age_cat, data = imputed)
 summary(Age_1)
@@ -113,7 +108,6 @@ exp <- exp(coef(Age_1))
 ci <- exp(confint(Age_1))
 exp(cbind(OR = coef(Age_1), ci))
 exp(cbind(OR = coef(Age_1)))
-
 
 lci <-exp-(2*(summary(Age_1)$standard.errors))
 Uci <-exp+(2*(summary(Age_1)$standard.errors))
@@ -126,10 +120,9 @@ p <- (1 - pnorm(abs(z), 0, 1))*2
 #pnorm(abs(z), lower.tail=TRUE)*2
 ?pnorm
 
-
-#==============================================================KI67
+#================KI67
+#descriptions as in Age parameter
 table(imputed$KI67_final2,imputed$Mol_subtype2, exclude = NULL)
-
 
 KI67 <- multinom(Mol_subtype2 ~ KI67_final2, data = imputed)
 
@@ -141,7 +134,9 @@ z1 <- summary(KI67)$coefficients/summary(KI67)$standard.errors
 
 p1 <- (1 - pnorm(abs(z1), 0, 1))*2
 
-#===============================Histology grade
+#=======================Histology grade
+#remove grades from the data
+#follow description as in Age
 imputed$Histologic_grade2<- ifelse(imputed$Histologic_grade=="GRADE I","I",
                                 ifelse(imputed$Histologic_grade=="GRADE II", "II",
                                         ifelse(imputed$Histologic_grade=="GRADE II ", "II",
@@ -152,7 +147,6 @@ imputed$Histologic_grade2<- ifelse(imputed$Histologic_grade=="GRADE I","I",
 table(imputed$Histologic_grade2,exclude =NULL)
 table(imputed$Histologic_grade2, exclude = NULL)
 
-#Malig_pap6$Histologic_grade2[is.na(Malig_pap6$Histologic_grade)]<-"Notreported"
 table(imputed$Histologic_grade2,imputed$Mol_subtype2, exclude = NULL)
 
 Histo_grade <- multinom(Mol_subtype2 ~ Histologic_grade2, data = imputed)
@@ -162,9 +156,10 @@ z2 <- summary(Histo_grade)$coefficients/summary(Histo_grade)$standard.errors
 
 p2 <- (1 - pnorm(abs(z2), 0, 1))*2
 
-#=====================================breast side-laterality
+#===================breast side-laterality
+#description as in Age
 table(imputed$Mol_subtype2, exclude = NULL)
-#Malig_pap6$breast_side4[is.na(Malig_pap6$breast_side4)]<-"Notreported"
+
 
 Malig_pap6$breast_side5 <-ifelse(Malig_pap6$Mol_subtype2=="LEFTBREAST","LEFTBREAST",
                                  ifelse( Malig_pap6$breast_side4=="RIGHTBREAST","RIGHTBREAST",NA))
@@ -182,15 +177,12 @@ ci <- exp(confint(breast_side4))
 z3 <- summary(breast_side4)$coefficients/summary(breast_side4)$standard.errors
 p3 <- (1 - pnorm(abs(z3), 0, 1))*2
 
-#============================================================
+#==
 table(Malig_pap6$histyp4)
 table(Malig_pap6$year2)
 
-#=========================================
-table(Malig_pap6$year2)
-
-table(Malig_pap6$Histologic_grade,exclude = NULL)
-#====================================================Race
+#====================Race
+#description as in Age
 imputed$Race4 <- as.factor(imputed$Race4)
 imputed$Race4 <- relevel(imputed$Race4, ref ="Black")
 
@@ -209,8 +201,8 @@ exp(cbind(OR = coef(Race4)))
 z5 <- summary(Race4)$coefficients/summary(Race4)$standard.errors
 p5 <- (1 - pnorm(abs(z5), 0, 1))*2
 
-#==========================================================
 #====================================================histo_type
+#description as in Age
 table(imputed$histyp5)
 imputed$histyp5 <- as.factor(imputed$histyp5)
 imputed$histyp5 <- relevel(imputed$histyp5, ref ="IDC")
@@ -230,42 +222,7 @@ exp(cbind(OR = coef(histype)))
 z6 <- summary(histype)$coefficients/summary(histype)$standard.errors
 p6 <- (1 - pnorm(abs(z6), 0, 1))*2
 
-
-#========================================================ALL
-ALL_var <- multinom(Mol_subtype3 ~ Race+KI67_final2+Histologic_grade+Age_cat, data = Malig_pap6)
-summary(race)
-
-z6 <- summary(ALL_var)$coefficients/summary(ALL_var)$standard.errors
-p6 <- (1 - pnorm(abs(z6), 0, 1))*2
-
-#====================================================================================Age adjusted polytomous 
-BC2E$Age_cat2 <- ifelse(BC2E$Age3 <50,"<50",
-                        ifelse(BC2E$Age3>=40, ">=50",NA))
-
-
-table(BC2E$Age_cat, exclude =NULL)
-
-
-
-
-
-
-
-
-
-
-
-#========================================================ALL
-ALL_var <- multinom(Mol_subtype3 ~ Race+KI67_final2+Histologic_grade+Age_cat, data = imputed)
-summary(race)
-
-z6 <- summary(ALL_var)$coefficients/summary(ALL_var)$standard.errors
-p6 <- (1 - pnorm(abs(z6), 0, 1))*2
-
-
-
-
-#==============================================================================Race VS Molecular subtype=================================
+==============================================================Race VS Molecular subtype=================================
 #=======================================================Molecular trend and year
 library(ggplot2)
 library(dplyr)
@@ -305,8 +262,9 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g3+ My_Theme
-#=================================================================================================================
-#==============================================================Incidence cases age vs mol
+#=======================================================Data visualisation
+#=====Incidence cases age vs molecular subtypes
+#create data for age and mol. subtype
 
 table(imputed$Age_cat)
 Age_molp <- imputed %>%
@@ -336,7 +294,7 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g4+ My_Theme
-#===================================================================Race molecular subtype
+#===========Race molecular subtype
 
 Age_molp <- imputed %>%
   count(Race4, Mol_subtype2) %>%
