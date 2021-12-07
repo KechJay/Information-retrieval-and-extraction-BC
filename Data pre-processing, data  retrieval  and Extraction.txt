@@ -107,8 +107,8 @@ BC1 <- BC1%>%
   mutate(Her23 = ifelse(is.na(Her21), Her22, Her21))
 table(is.na(BC1$Her23))
 
-table(BC1$Her23)
-
+table(BC1$Her23)#check the categories in the combined column
+# use the term variants in the dictionary to bin the differnt categories, and replace with NA , where there are no data
 BC1$Her2_final <- ifelse(BC1$Her23=="HERNEU STAIN YIELDS A 2","EQUIVOCAL",
 ifelse(BC1$Her23=="HERNEU STAIN SCORES A 2","EQUIVOCAL",
 ifelse(BC1$Her23=="HERNEU RECEPTOR 2","EQUIVOCAL",
@@ -144,7 +144,7 @@ ifelse(BC1$Her23=="HERNEU 3","POSITIVE",
 ifelse(BC1$Her23=="POSITVE","POSITIVE",
 ifelse(BC1$Her23=="STRONG","POSITIVE",NA
 ))))))))))))))))))))))))))))))))))
-
+3check categories and missing
 table(BC1$Her2_final)
 table(is.na(BC1$Her2_final))      
 
