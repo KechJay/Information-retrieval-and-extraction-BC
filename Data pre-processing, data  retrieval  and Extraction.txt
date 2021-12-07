@@ -1,27 +1,26 @@
-rm(list=ls())
+rm(list=ls())#clear environment
 
-options(java.parameters = "-Xmx8g")
-memory.limit(18000000)
-memory.limit()
+#options(java.parameters = "-Xmx8g")#Check and set memory limit. 
+#memory.limit()
+#memory.limit(18000000)
 #rstudio.exe --max-ppsize=5e6
-options(expressions = 5e5)
-gc()
+#options(expressions = 5e5)
+#gc()
 
-#C:/Program Files/RStudio/bin>rstudio.exe --max-pp-size=500000
+
 #==========================import data
-rm(list = ls())
+#=check and set working directory, and import data
 getwd()
 setwd("C:/Users/user-pc/Desktop/Kech2")
 BC1 <- read.csv("BC_merged_NCR_imp_V2.csv")
 
 
 ##=========================Pre-processing
-
-
-
-BC1A <- data.frame(NER=c("KI57","KI-67","KI/67","KAI67"),Dictionary = c("KI67","KI67","KI67","KI67"), stringsAsFactors = FALSE)
+#identify variants of each term to be extracted in the pathology report, and construct a dictionary of a standardised term. 
+BC1A <- data.frame(NER=c("KI57","KI-67","KI/67","KAI67"),Dictionary = c("KI67","KI67","KI67","KI67"), stringsAsFactors = FALSE) 
 BC1B = BC1
-text =  BC1$Text
+text =  BC1$Text #only the text report needed
+#replace any variant of Ki67 with Ki67 in the report for each case report
 BC1B$text <- sapply(1:length(text), function(x) stringr::str_replace_all(text[x],setNames(as.character(BC1A$Dictionary), BC1A$NER)))
 
 
