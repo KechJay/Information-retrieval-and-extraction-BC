@@ -1,4 +1,4 @@
-#============================================================Validation data set===============================================
+#============================================================Validation data set
 #===================================resampling
 set.seed(3456)
 Valid_data <- BC2H[sample(nrow(BC2H), 300), ]#Note that this was sample from the first completed data which was 7645, now we have 9882
@@ -10,9 +10,6 @@ write.csv(dup2,  file=
 
 Not_stand <- read.csv("BC_merged_NCR_imp_V2_not_standardised.csv")
 
-#common <- intersect(Valid_data$EPISODE_NO, Not_stand$EPISODE_NO) 
-
-#Valid_data2 <-data.frame(common)
 
 Valid_data2 <- merge(Valid_data,Not_stand, by.x = "EPISODE_NO", by.y = "EPISODE_NO")
 
