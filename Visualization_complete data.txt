@@ -1,6 +1,8 @@
-#===================================================================alternatively for proportion
-library(dplyr)
+#=====================Alternatively for proportion
+library(dplyr)#Load package
 library(tidyverse)
+
+#create cross tabulation wof year and molecular subtypes
 fre_molp <- BC2H %>%
   count(year2, Mol_subtype2) %>%
   group_by(year2) %>%
@@ -8,12 +10,17 @@ fre_molp <- BC2H %>%
   tidyr::pivot_wider(names_from = Mol_subtype2, values_from = n, 
                      values_fill = list(n = 0))
 
+#convert cross tab to dataframe
 fre_molp <- as.data.frame(fre_molp)
- 
+ #stack column 2:5 and. creat data with three columns
  data <- cbind(fre_molp[1], stack(fre_molp[2:5]))
  data$year2 <- as.factor(data$year2)
  
+ #rounding to 1 decimal
  data$values <- round(data$values, digits = 1)
+ 
+ #make a trend plot with molecular subtype across each year
+ #line plot #not used in this study
  g2 <- ggplot(data, aes(year2, values,group=ind,color =ind)) +
    geom_point(size=2) +
    geom_line(aes( group = ind,color =ind), size = 1) +
@@ -24,7 +31,7 @@ fre_molp <- as.data.frame(fre_molp)
    axis.title.y = element_text(size = 16),
    axis.text.y = element_text(size = 14))
  g2+ My_Theme
- #=============================================================Incidence cases year and mol_sub
+ #============barplot
  g3 <- ggplot(data, aes(x = year2, y = values, fill = ind, label = values)) +
    geom_bar(stat = "identity") +
    labs(x = "Year of diagnosis", y = "Proportion of cases (%)")+
@@ -36,7 +43,8 @@ fre_molp <- as.data.frame(fre_molp)
      axis.title.y = element_text(size = 16),
      axis.text.y = element_text(size = 14))
  g3+ My_Theme
- #==============================================================Incidence cases age vs mol
+ #================================Incidence cases age vs mol
+ #the same  description as explained with the year above
 
  table(BC2H$Age_cat)
  Age_molp <- BC2H %>%
@@ -66,7 +74,8 @@ fre_molp <- as.data.frame(fre_molp)
    axis.title.y = element_text(size = 16),
    axis.text.y = element_text(size = 14))
  g4+ My_Theme
- #==============================================================================================Race vs molesubtype
+ #======================================Race vs molesubtype
+ #the same  description as explained with the year above
 table(Race_miss$Race4)
 Age_molp <- Race_miss %>%
   count(Race4, Mol_subtype2) %>%
@@ -95,7 +104,8 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g4+ My_Theme
-#==============================================================================================Race vs molesubtype
+#==============================================Race vs molesubtype
+ #the same  description as explained with the year above
 table(Race_miss$Race4)
 Age_molp <- Race_miss %>%
   count(Race4, Mol_subtype2) %>%
@@ -125,11 +135,10 @@ My_Theme = theme(
   axis.text.y = element_text(size = 14))
 g4+ My_Theme
 
-#===========================================================================================Age, race and molecular subtype
+#==================================Age, race and molecular subtype
 #complete data for age3  from age  since there is high correlation between the two
 Agedata <-BC2H
 Agedata$Age3 <- ifelse(is.na(Agedata$Age3), Agedata$Age, Agedata$Age3)
-
 
 
 Agedata$Age_cat <- ifelse(Agedata$Age3 <40,"<40",
@@ -138,17 +147,17 @@ Agedata$Age_cat <- ifelse(Agedata$Age3 <40,"<40",
                                      ifelse(Agedata$Age3>=60 & Agedata$Age3<=69,"60-69","70-104"))))
 
 
-
+#take only complete cases
 Race_miss2 <- Agedata[complete.cases(Agedata$Race4),]
 Race_miss3 <- Race_miss2[complete.cases(Race_miss2$Age_cat),]
 table(Race_miss3$Age_cat,exclude = NULL)
-
+#this was computed for each race group
 Asian <- Race_miss3[which(Race_miss3$Race4=="Asian"),]
 Black <- Race_miss3[which(Race_miss3$Race4=="Black"),]
 Colored <- Race_miss3[which(Race_miss3$Race4=="Colored"),]
 White <- Race_miss3[which(Race_miss3$Race4=="White"),]
 
-
+##the same  description as explained with the year above
 table(Asian$Age_cat,exclude = NULL)
 Age_molp <- Colored %>%
   count(Age_cat, Mol_subtype2) %>%
@@ -180,17 +189,3 @@ My_Theme = theme(
 g4+ My_Theme
 
 #plot for all the racial groups
-
-
-
-
-
-
-
-
-
-
-
-
-
-
