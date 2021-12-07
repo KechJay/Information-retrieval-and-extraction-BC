@@ -1,18 +1,25 @@
+#============================Ki67 analysis
+#from imputed data
+#evalutae ki67
+#cross tab of Kii67 with each variable
+#run binomial logistic regression
+#extract odd ratio, confidence interval and p-value
+
 table(imputed$KI67_final2)
 table(imputed$Age_cat, exclude = NULL)
-
 imputed$KI67_final2 <-as.factor(imputed$KI67_final2)
-
-table(imputed$Age_cat,imputed$KI67_final2,exclude = NULL)
 table(imputed$KI67_final2)
-require(nnet)
-#======================================================================Age
+
+require(nnet)#load package
+#==================================Age
+table(imputed$Age_cat,imputed$KI67_final2,exclude = NULL)#cross tab
 str(imputed)
-Age_1 <- glm(KI67_final2 ~ Age_cat,  family="binomial", data = imputed)
+Age_1 <- glm(KI67_final2 ~ Age_cat,  family="binomial", data = imputed)#log model
 summary(Age_1)
 # coef(summary(model1))
-exp <- exp(coef(Age_1))
+exp <- exp(coef(Age_1))#odd ratio
 
+#confience interval
 ?confint
 ci <- exp(confint(Age_1))
 exp(cbind(OR = coef(Age_1), ci))
@@ -26,12 +33,14 @@ exp(cbind(OR = coef(m), ci))
 
 z <- summary(Age_1)$coefficients/summary(Age_1)$standard.errors
 
+#p-value
 p <- (1 - pnorm(abs(z), 0, 1))*2
 #pnorm(abs(z), lower.tail=TRUE)*2
 ?pnorm
 
 
-#==============================================================Oestrogen
+#===========Oestrogen (
+#description as in Age above
 table(imputed$Oestrogen_final,imputed$KI67_final2, exclude = NULL)
 
 
@@ -44,7 +53,8 @@ ci <- exp(confint(Oestr))
 z1 <- summary(Oestr)$coefficients/summary(Oestr)$standard.errors
 
 p1 <- (1 - pnorm(abs(z1), 0, 1))*2
-#==============================================================Progesterone
+#========Progesterone
+3description as in age above
 table(imputed$Progesterone_final,imputed$KI67_final2, exclude = NULL)
 
 Progesterone <- glm(KI67_final2 ~ Progesterone_final, family="binomial",data = imputed)
@@ -56,7 +66,8 @@ ci <- exp(confint(Progesterone))
 z1 <- summary(Progesterone)$coefficients/summary(Progesterone)$standard.errors
 
 p1 <- (1 - pnorm(abs(z1), 0, 1))*2
-#==============================================================Herneu
+#=============================Herneu
+Description as in age above
 table(imputed$Her2_final,imputed$KI67_final2, exclude = NULL)
 
 Progesterone <- glm(KI67_final2 ~ Her2_final, family="binomial",data = imputed)
@@ -83,7 +94,7 @@ z2 <- summary(Histo_grade)$coefficients/summary(Histo_grade)$standard.errors
 
 p2 <- (1 - pnorm(abs(z2), 0, 1))*2
 
-#=====================================breast side-laterality
+#===============================breast side-laterality
 table(imputed$Mol_subtype2, exclude = NULL)
 #Malig_pap6$breast_side4[is.na(Malig_pap6$breast_side4)]<-"Notreported"
 
@@ -101,14 +112,6 @@ ci <- exp(confint(breast_side4))
 z3 <- summary(breast_side4)$coefficients/summary(breast_side4)$standard.errors
 p3 <- (1 - pnorm(abs(z3), 0, 1))*2
 
-#============================================================
-table(Malig_pap6$histyp4)
-table(Malig_pap6$year2)
-
-#=========================================
-table(Malig_pap6$year2)
-
-table(Malig_pap6$Histologic_grade,exclude = NULL)
 #====================================================Race
 imputed$Race4 <- as.factor(imputed$Race4)
 imputed$Race4 <- relevel(imputed$Race4, ref ="Black")
@@ -128,8 +131,7 @@ exp(cbind(OR = coef(Race4)))
 z5 <- summary(Race4)$coefficients/summary(Race4)$standard.errors
 p5 <- (1 - pnorm(abs(z5), 0, 1))*2
 
-#==========================================================
-#=============================================================================histo_type
+#===============================histo_type
 table(imputed$histyp5)
 imputed$histyp5 <- as.factor(imputed$histyp5)
 imputed$histyp5 <- relevel(imputed$histyp5, ref ="IDC")
@@ -149,7 +151,7 @@ exp(cbind(OR = coef(histype)))
 z6 <- summary(histype)$coefficients/summary(histype)$standard.errors
 p6 <- (1 - pnorm(abs(z6), 0, 1))*2
 
-#=============================================================================Molecular subtype
+#=======================================Molecular subtype
 
 imputed$Mol_subtype2 <- ordered(imputed$Mol_subtype, levels =c("Luminal A", "Luminal B", "HER2-OE", "TNBC"))
 levels(imputed$Mol_subtype2)<- c("LuminalA", "LuminalB", "HER2OE", "TNBC")
@@ -175,24 +177,16 @@ p7 <- (1 - pnorm(abs(z7), 0, 1))*2
 
 
 
-
 Mol <- glm( Histologic_grade ~ Race4, family="binomial", data = imputed)
 
 summary()
 
-
-
-
-
-
-
-
-
-
-#===================================================================================descriptive statistics
+#================================================Data visualisation 
+#load packages
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
+#create cross tabulation of year and ki67
 fre_molp <- imputed %>%
   count(year2, KI67_final2) %>%
   group_by(year2) %>%
@@ -202,10 +196,15 @@ fre_molp <- imputed %>%
 
 fre_molp <- as.data.frame(fre_molp)
 
+#convert cross tab to dataframe
 data <- cbind(fre_molp[1], stack(fre_molp[2:3]))
 data$year2 <- as.factor(data$year2)
 
+#round the decimals to 1
 data$values <- round(data$values, digits = 1)
+
+#make a trend plot of each molecular subtype across years of study
+#point
 g2 <- ggplot(data, aes(year2, values,group=ind,color =ind)) +
   geom_point(size=2) +
   geom_line(aes( group = ind,color =ind), size = 1) +
@@ -216,7 +215,8 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g2+ My_Theme
-#=============================================================Incidence cases year and mol_sub
+
+#=barplot
 g3 <- ggplot(data, aes(x = year2, y = values, fill = ind, label = values)) +
   geom_bar(stat = "identity") +
   labs(x = "Year of diagnosis", y = "Proportion of cases (%)")+
@@ -228,8 +228,9 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g3+ My_Theme
-#=================================================================================================================
-#==============================================================Incidence cases age vs ki67
+
+#========================Incidence cases age vs ki67
+#description as inyear above
 
 table(imputed$Age_cat)
 Age_molp <- imputed %>%
@@ -246,7 +247,7 @@ data2$Age_cat <- as.factor(data2$Age_cat)
 
 data2$values <- round(data2$values, digits = 1)
 
-#data3 <- data2[complete.cases(data2$Age_cat),]
+
 
 g4 <- ggplot(data2, aes(x = Age_cat, y = values, fill = ind, label = values)) +
   geom_bar(stat = "identity") +
@@ -259,8 +260,8 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g4+ My_Theme
-#===================================================================Race molecular subtype
-
+#====================================Race molecular subtype
+#description as in year above
 Age_molp <- imputed %>%
   count(Race4, KI67_final2) %>%
   group_by(Race4) %>%
@@ -288,14 +289,15 @@ My_Theme = theme(
   axis.title.y = element_text(size = 16),
   axis.text.y = element_text(size = 14))
 g4+ My_Theme
-#===============================================================================
-
+#=====================================================Race, age and ki67
+#analysis was done for each race group
 Asian <- imputed[which(imputed$Race4=="Asian"),]
 Black <- imputed[which(imputed$Race4=="Black"),]
 Colored <- imputed[which(imputed$Race4=="Colored"),]
 White <- imputed[which(imputed$Race4=="White"),]
 
-
+#creat cross tab for race, age and ki67
+#then description as in year above 
 table(Asian$Age_cat,exclude = NULL)
 Age_molp <- Colored %>%
   count(Age_cat, KI67_final2) %>%
@@ -311,7 +313,7 @@ data2$Age_cat <- as.factor(data2$Age_cat)
 
 data2$values <- round(data2$values, digits = 1)
 
-#data3 <- data2[complete.cases(data2$Age_cat),]
+
 
 g4 <- ggplot(data2, aes(x = Age_cat, y = values, fill = ind, label = values)) +
   geom_bar(stat = "identity",width = 0.7) +
