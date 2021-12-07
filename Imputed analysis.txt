@@ -1,8 +1,38 @@
 table(Malig_pap6$Race)
+#=====================================Missing pattren assessment and imputation
+#load packages
+Sys.which("make")
+install.packages("VIM")
+library(VIM) # optional
+library(mice)
+library(BaylorEdPsych)
+library(mvnmle)
+#library(missForest)
 
+#conduct MCAR for all the variables or specific set of variables
+Mcar<-LittleMCAR(data.frame(data[,2,5,9,12,15]))
+Mcar[c("chi.square", "df", "p.value")]
 
-#=======================================Imputation#==================================
-#===Imputation
+#assess pattern 
+md.pattern(MRCdata)
+# library(VIM): optional
+aggr(MRCi, col=c('navyblue','yellow'),
+     numbers=TRUE, sortVars=TRUE,
+     labels=names(data), cex.axis=.7,
+     gap=3, ylab=c("Missing data","Pattern"))
+
+#identify cases with highest missing
+na_rows = rowSums(is.na(data))
+list(row)
+which.max(na_rows) 
+which(na_rows > 50)
+
+shadow<- as.data.frame(abs(is.na(data)))
+miss.shadow<-shadow[,which(unlist(lapply(shadow,sum))!=0)]
+round(cor(miss.shadow),3)  
+#===================MissForest Imputation
+#subset data for imputation
+# convert each categorical parameter to factor format
 data <- BC2H[,c(17:28,31)]
 
 str(data)
@@ -19,9 +49,11 @@ data$Mol_subtype<- as.factor(data$Mol_subtype)
 data$Age_cat<- as.factor(data$Age_cat)
 data$breast_side4<- as.factor(data$breast_side4)
 
-#==================================================================================
-#===Imputation
 
+#===Missforest Imputation
+#set up code for missforest imputation
+#extract the OBB error
+#create the imputed data
 str(data)
 library(missForest)
 set.seed(81)
@@ -37,47 +69,16 @@ for_imp$OOBerror
 imputed<-for_imp$ximp
 is.na(imputed)
 names(imputed)
-
-
-
 str(imputed)
 
+#save data abd imputed data for reference
 #write.csv(data, file="data.csv")
 #write.csv(imputed, file ="imputed.csv") 
 
 
 
 
-Sys.which("make")
-install.packages("VIM")
-library(VIM) # optional
-library(mice)
-library(BaylorEdPsych)
-library(mvnmle)
-#library(missForest)
 
-Mcar<-LittleMCAR(data.frame(data[,2,5,9,12,15]))
-Mcar[c("chi.square", "df", "p.value")]
-
-
-
-md.pattern(MRCdata)
-
-# library(VIM): optional
-aggr(MRCi, col=c('navyblue','yellow'),
-     numbers=TRUE, sortVars=TRUE,
-     labels=names(MRCi), cex.axis=.7,
-     gap=3, ylab=c("Missing data","Pattern"))
-
-#identify cases with highest missing
-na_rows = rowSums(is.na(MRCdata))
-list(row)
-which.max(na_rows) 
-which(na_rows > 50)
-
-shadow<- as.data.frame(abs(is.na(MRCi)))
-miss.shadow<-shadow[,which(unlist(lapply(shadow,sum))!=0)]
-round(cor(miss.shadow),3)  
 #====================================================================================
 table(imputed$Race)
 
